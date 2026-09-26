@@ -225,7 +225,7 @@ function rRnd(){
 
 // ======================= PONG =======================
 const PWIN=7;
-const PDIFF=[{name:'EASY',ai:0.80,ball:0.42,dead:0.32},{name:'MEDIUM',ai:1.22,ball:0.55,dead:0.14},{name:'HARD',ai:1.75,ball:0.68,dead:0.05}];
+const PDIFF=[{name:'EASY',ai:0.55,ball:0.42,dead:0.42},{name:'MEDIUM',ai:0.90,ball:0.54,dead:0.15},{name:'HARD',ai:1.55,ball:0.66,dead:0.04}];
 let pLy=0,pRy=0,pBX=0,pBY=0,pBVX=0,pBVY=0,pSL=0,pSR=0,pPh='diff',pWin=0,pUp=false,pDn=false,pMY=null,pSpd=0,pDrag=false,pDiff=1;
 function pCenter(){pLy=pFY+pFH/2-pPH/2;pRy=pFY+pFH/2-pPH/2;}
 function pServe(dir){pBX=pFX+pFW/2;pBY=pFY+pFH/2;pSpd=pFW*PDIFF[pDiff].ball;pBVX=dir*pSpd;pBVY=(Math.random()*2-1)*pSpd*0.55;pPh='serve';}
