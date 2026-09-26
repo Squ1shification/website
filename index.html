@@ -225,7 +225,7 @@ function rRnd(){
 
 // ======================= PONG =======================
 const PWIN=7;
-let pLy=0,pRy=0,pBX=0,pBY=0,pBVX=0,pBVY=0,pSL=0,pSR=0,pPh='serve',pWin=0,pUp=false,pDn=false,pMY=null,pSpd=0;
+let pLy=0,pRy=0,pBX=0,pBY=0,pBVX=0,pBVY=0,pSL=0,pSR=0,pPh='serve',pWin=0,pUp=false,pDn=false,pMY=null,pSpd=0,pDrag=false;
 function pCenter(){pLy=pFY+pFH/2-pPH/2;pRy=pFY+pFH/2-pPH/2;}
 function pServe(dir){pBX=pFX+pFW/2;pBY=pFY+pFH/2;pSpd=pFW*0.52;pBVX=dir*pSpd;pBVY=(Math.random()*2-1)*pSpd*0.55;pPh='serve';}
 function pEnter(){pSL=0;pSR=0;pWin=0;pUp=false;pDn=false;pMY=null;pCenter();pServe(Math.random()<0.5?1:-1);setTheme();}
@@ -234,11 +234,11 @@ function pKey(e){
   else if(e.code==='ArrowDown'||e.code==='KeyS'){pDn=true;e.preventDefault();}
   else if(e.code==='Space'||e.code==='Enter'){ if(pPh==='serve')pPh='play'; else if(pPh==='over')pEnter(); e.preventDefault(); } }
 function pKeyup(e){ if(e.code==='ArrowUp'||e.code==='KeyW')pUp=false; else if(e.code==='ArrowDown'||e.code==='KeyS')pDn=false; }
-function pPdown(e){ pMY=e.clientY; if(pPh==='serve')pPh='play'; else if(pPh==='over')pEnter(); }
-function pMove(e){ pMY=e.clientY; }
+function pPdown(e){ pDrag=true; pMY=e.clientY; if(pPh==='serve')pPh='play'; else if(pPh==='over')pEnter(); }
+function pMove(e){ if(pDrag)pMY=e.clientY; }
 function pUpd(dt){
-  const psp=pFH*1.7;
-  if(pUp)pLy-=psp*dt; else if(pDn)pLy+=psp*dt; else if(pMY!=null){ const tg=pMY-pPH/2; pLy+=(tg-pLy)*Math.min(1,dt*16); }
+  const psp=pFH*2.1;
+  if(pUp)pLy-=psp*dt; else if(pDn)pLy+=psp*dt; else if(pDrag&&pMY!=null){ const tg=pMY-pPH/2; pLy+=(tg-pLy)*Math.min(1,dt*18); }
   pLy=Math.max(pFY,Math.min(pFY+pFH-pPH,pLy));
   const asp=pFH*1.15, at=pBY-pPH/2; if(Math.abs(at-pRy)>4)pRy+=Math.sign(at-pRy)*asp*dt; pRy=Math.max(pFY,Math.min(pFY+pFH-pPH,pRy));
   if(pPh!=='play')return;
@@ -276,7 +276,8 @@ addEventListener('keydown',e=>{
   if(screen==='menu') menuKey(e); else if(screen==='runner') rKey(e); else if(screen==='pong') pKey(e); });
 addEventListener('keyup',e=>{ if(screen==='runner') rKeyup(e); else if(screen==='pong') pKeyup(e); });
 cvs.addEventListener('pointerdown',e=>{ if(screen==='runner') rPdown(e); else if(screen==='pong') pPdown(e); });
-addEventListener('pointerup',()=>{ held=false; });
+addEventListener('pointerup',()=>{ held=false; pDrag=false; });
+addEventListener('pointercancel',()=>{ held=false; pDrag=false; });
 cvs.addEventListener('pointermove',e=>{ if(screen==='pong') pMove(e); });
 let last=performance.now();
 function loop(t){ let dt=Math.min(0.05,(t-last)/1000);last=t;
