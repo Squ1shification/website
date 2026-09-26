@@ -18,15 +18,11 @@
   #menu .carousel{display:flex;align-items:center;gap:clamp(6px,2vw,20px);}
   #menu .arrow{font-family:inherit;font-size:clamp(30px,6vw,58px);line-height:1;color:#7bff9e;background:none;border:none;cursor:pointer;padding:4px 8px;transition:.1s;-webkit-user-select:none;user-select:none;}
   #menu .arrow:hover{color:#eafff0;transform:scale(1.18);}
-  #menu .viewport{width:min(78vw,440px);overflow:hidden;}
+  #menu .viewport{width:min(84vw,480px);overflow:hidden;}
   #menu .cards{display:flex;transition:transform .3s cubic-bezier(.34,.1,.2,1);}
-  #menu .card{box-sizing:border-box;min-width:100%;display:flex;justify-content:center;align-items:center;cursor:pointer;padding:10px 0;}
-  #menu .card pre{margin:0;color:#57c47a;font-size:clamp(8px,1.7vw,17px);line-height:1.1;white-space:pre;transition:color .1s;}
+  #menu .card{box-sizing:border-box;min-width:100%;display:flex;justify-content:center;align-items:center;cursor:pointer;padding:6px 0;min-height:clamp(150px,26vw,240px);}
+  #menu .card pre{margin:0;color:#57c47a;font-size:clamp(8px,1.7vw,17px);line-height:1.12;white-space:pre;transition:color .1s;}
   #menu .card:hover pre,#menu .card.sel pre{color:#8dffb2;text-shadow:0 0 10px rgba(123,255,158,.4);}
-  #menu .dots{display:flex;gap:11px;margin-top:6px;}
-  #menu .dot{width:11px;height:11px;border:2px solid #2c8f52;border-radius:50%;cursor:pointer;transition:.12s;}
-  #menu .dot.on{background:#7bff9e;border-color:#7bff9e;}
-  #menu .mhint{margin-top:10px;color:#7a9a86;font-size:clamp(8px,1.15vw,12px);letter-spacing:1px;}
   #menubtn{position:fixed;top:10px;right:12px;z-index:4;display:none;font-family:'PS2P',monospace;font-size:10px;color:#eafff0;
      background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.55);padding:7px 9px;cursor:pointer;letter-spacing:1px;}
   body.shake{animation:shk .3s;}@keyframes shk{20%{transform:translate(4px,3px)}40%{transform:translate(-5px,-2px)}60%{transform:translate(3px,-3px)}100%{transform:none}}
@@ -50,26 +46,38 @@
     <div class="carousel">
       <button class="arrow" id="prev" aria-label="Previous game">&lt;</button>
       <div class="viewport"><div class="cards" id="cards">
-        <div class="card" data-s="runner"><pre>+------------------------+
-|                        |
-|       SKULL RUN        |
-|                        |
-+------------------------+</pre></div>
-        <div class="card" data-s="pong"><pre>+------------------------+
-|                        |
-|          PONG          |
-|                        |
-+------------------------+</pre></div>
-        <div class="card" data-s="invaders"><pre>+------------------------+
-|                        |
-|     SPACE INVADERS     |
-|                        |
-+------------------------+</pre></div>
+        <div class="card" data-s="runner"><pre>       _.-'''''-._
+     .'           '.
+    /   .-.   .-.    \
+   |   ( o ) ( o )   |
+   |    '-'   '-'    |
+   |       /\        |
+    \     |  |      /
+     \   .----.    /
+      '. |_||_| .'
+        '.____.'
+      S K U L L
+        R U N</pre></div>
+        <div class="card" data-s="pong"><pre>   .------------------.
+   | ##      :        |
+   | ##      :   ()   |
+   | ##      :        |
+   |         :     ## |
+   |         :     ## |
+   '------------------'
+       P  O  N  G</pre></div>
+        <div class="card" data-s="invaders"><pre>    .   *    .    *  .
+   *     _______     .
+        / o   o \
+       |   ___   |
+       |  |   |  |
+        \_|   |_/
+       /_/     \_\
+    S P A C E
+    I N V A D E R S</pre></div>
       </div></div>
       <button class="arrow" id="next" aria-label="Next game">&gt;</button>
     </div>
-    <div class="dots" id="dots"></div>
-    <div class="mhint">&lt; &gt;  SWITCH      [ENTER] PLAY</div>
   </div>
   <button id="menubtn">[ MENU ]</button>
 <script>
@@ -109,14 +117,11 @@ function reveal(){titleEl.classList.add('show');}
 
 // ======================= MENU =======================
 let sel=0; const gameEls=[...document.querySelectorAll('#menu .card')];
-const track=document.getElementById('cards'), dotsEl=document.getElementById('dots'), vp=document.querySelector('#menu .viewport');
-gameEls.forEach((el,i)=>dotsEl.insertAdjacentHTML('beforeend','<span class="dot" data-i="'+i+'"></span>'));
-const dotEls=[...dotsEl.children];
-function updateSel(){ track.style.transform='translateX(-'+(sel*100)+'%)'; gameEls.forEach((el,i)=>el.classList.toggle('sel',i===sel)); dotEls.forEach((d,i)=>d.classList.toggle('on',i===sel)); }
+const track=document.getElementById('cards'), vp=document.querySelector('#menu .viewport');
+function updateSel(){ track.style.transform='translateX(-'+(sel*100)+'%)'; gameEls.forEach((el,i)=>el.classList.toggle('sel',i===sel)); }
 function go(d){ sel=(sel+d+gameEls.length)%gameEls.length; updateSel(); }
 let dragX=null,dragged=false;
 gameEls.forEach(el=>el.addEventListener('click',()=>{ if(!dragged)launch(el.dataset.s); }));
-dotEls.forEach((d,i)=>d.addEventListener('click',()=>{sel=i;updateSel();}));
 document.getElementById('prev').addEventListener('click',()=>go(-1));
 document.getElementById('next').addEventListener('click',()=>go(1));
 vp.addEventListener('pointerdown',e=>{dragX=e.clientX;dragged=false;});
