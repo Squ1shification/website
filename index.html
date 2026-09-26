@@ -294,20 +294,20 @@ function pRnd(){
 // ======================= SPACE INVADERS (flying side-scroller shmup) =======================
 const INVA=["00100000100","00010001000","00111111100","01101110110","11111111111","10111111101","10100000101","00011011000"];
 const INVB=["00100000100","10010001001","10111111101","11101110111","11111111111","00111111100","00100000100","01000000010"];
-const SHW=46,SHH=26,SHF=4;
+const SHW=46,SHH=26,SHF=4,WINKILLS=30,MAXFOES=4;
 let siPh='ready',sScore=0,sLives=3,shipX=0,shipY=0,sUp=false,sDn=false,sLeft=false,sRight=false,siDrag=false,siTX=null,siTY=null,
-    pBul=[],eBul=[],foes=[],stars=[],siAnim=0,siT=0,spawnT=0.6,shipCd=0,siHit=0;
+    pBul=[],eBul=[],foes=[],stars=[],siAnim=0,siT=0,spawnT=1.0,shipCd=0,siHit=0;
 function siBmp(pat,x,y,w,col){ const cell=w/pat[0].length, s=Math.ceil(cell)+0.5; ctx.fillStyle=col;
   for(let r=0;r<pat.length;r++){const row=pat[r]; for(let c=0;c<row.length;c++){const ch=row[c]; if(ch!=='0'&&ch!=='.')ctx.fillRect(Math.floor(x+c*cell),Math.floor(y+r*cell),s,s);}} }
 function siShipW(){return siU*6;} function siShipH(){return siShipW()*SHH/SHW;}
 function siStars(){ stars=[]; for(let i=0;i<80;i++)stars.push({x:siFX+Math.random()*siFW,y:siFY+Math.random()*siFH,z:30+Math.random()*150}); }
-function siEnter(){ sScore=0;sLives=3;siT=0;spawnT=0.6;shipCd=0;siHit=0; shipX=siFX+siFW*0.16; shipY=siFY+siFH*0.5;
+function siEnter(){ sScore=0;sLives=3;siT=0;spawnT=1.0;shipCd=0;siHit=0; shipX=siFX+siFW*0.16; shipY=siFY+siFH*0.5;
   sUp=sDn=sLeft=sRight=siDrag=false; siTX=siTY=null; pBul=[];eBul=[];foes=[]; siStars(); siPh='ready'; setTheme(); }
-function siSpawnFoe(){ const w=siU*3, h=w*8/11, m=h*0.7+siU, sp=siFW*(0.15+0.09*Math.random())*(1+siT*0.015);
-  const baseY=siFY+m+Math.random()*(siFH-2*m), wob=Math.random()<0.55;
-  foes.push({x:siFX+siFW+w, y:baseY, baseY:baseY, w:w, h:h, vx:-sp, amp:wob?(siFH*0.06+Math.random()*siFH*0.1):0, wf:1.5+Math.random()*2, ph:Math.random()*6.28, fireT:0.6+Math.random()*1.8}); }
+function siSpawnFoe(){ const w=siU*3, h=w*8/11, m=h*0.7+siU, sp=siFW*(0.08+0.045*Math.random())*(1+siT*0.005);
+  const baseY=siFY+m+Math.random()*(siFH-2*m), wob=Math.random()<0.5;
+  foes.push({x:siFX+siFW+w, y:baseY, baseY:baseY, w:w, h:h, vx:-sp, amp:wob?(siFH*0.05+Math.random()*siFH*0.08):0, wf:1.2+Math.random()*1.6, ph:Math.random()*6.28, canFire:Math.random()<0.55, fireT:1.4+Math.random()*2.6}); }
 function siFireP(){ if(shipCd>0)return; pBul.push({x:shipX+siShipW()*0.42,y:shipY}); shipCd=0.2; }
-function siStart(){ if(siPh==='ready'){siPh='play';} else if(siPh==='over'){siEnter();siPh='play';} else return false; return true; }
+function siStart(){ if(siPh==='ready'){siPh='play';} else if(siPh==='over'||siPh==='win'){siEnter();siPh='play';} else return false; return true; }
 function siKey(e){
   if(e.code==='ArrowUp'||e.code==='KeyW'){sUp=true;e.preventDefault();}
   else if(e.code==='ArrowDown'||e.code==='KeyS'){sDn=true;e.preventDefault();}
@@ -330,16 +330,17 @@ function siUpd(dt){
   if(siDrag&&siTX!=null){ shipX+=(siTX-shipX)*Math.min(1,dt*16); shipY+=(siTY-shipY)*Math.min(1,dt*16); }
   shipX=Math.max(siFX+sw*0.5,Math.min(siFX+siFW*0.62,shipX)); shipY=Math.max(siFY+sh*0.5,Math.min(siFY+siFH-sh*0.5,shipY));
   // spawn foes one at a time (a stream, not a grid)
-  spawnT-=dt; if(spawnT<=0){ siSpawnFoe(); spawnT=Math.max(0.32,0.9-siT*0.018)*(0.65+Math.random()*0.8); }
+  spawnT-=dt; if(spawnT<=0){ if(foes.length<MAXFOES)siSpawnFoe(); spawnT=Math.max(0.7,1.7-siT*0.011)*(0.75+Math.random()*0.6); }
   // player shots (fly right)
   const bsp=siFW*1.3; pBul.forEach(b=>b.x+=bsp*dt); pBul=pBul.filter(b=>b.x<siFX+siFW+16);
   // foes fly left, some wobble, some fire back
   for(const f of foes){ f.x+=f.vx*dt; if(f.amp)f.y=f.baseY+Math.sin(siT*f.wf+f.ph)*f.amp;
-    f.fireT-=dt; if(f.fireT<=0&&f.x<siFX+siFW*0.95){ const dx=shipX-(f.x), dy=shipY-(f.y+f.h/2), n=Math.hypot(dx,dy)||1, es=siFW*0.42; eBul.push({x:f.x,y:f.y+f.h/2,vx:dx/n*es,vy:dy/n*es}); f.fireT=1.4+Math.random()*2.2; } }
+    f.fireT-=dt; if(f.canFire&&f.fireT<=0&&f.x<siFX+siFW*0.95){ const dx=shipX-(f.x), dy=shipY-(f.y+f.h/2), n=Math.hypot(dx,dy)||1, es=siFW*0.3; eBul.push({x:f.x,y:f.y+f.h/2,vx:dx/n*es,vy:dy/n*es}); f.fireT=2.6+Math.random()*3.2; } }
   foes=foes.filter(f=>f.x+f.w>siFX-8);
   // player bullet kills foe
   for(const b of pBul){ for(const f of foes){ if(!f.dead&&b.x>f.x&&b.x<f.x+f.w&&b.y>f.y&&b.y<f.y+f.h){ f.dead=true;b.dead=true;sScore+=10; break; } } }
   pBul=pBul.filter(b=>!b.dead); foes=foes.filter(f=>!f.dead);
+  if(sScore>=WINKILLS*10){ siPh='win'; return; }
   // ship hitbox (forgiving)
   const hx=sw*0.34,hy=sh*0.30;
   if(siHit<=0){
@@ -368,18 +369,20 @@ function siRnd(){
   ctx.restore();
   ctx.strokeStyle='rgba(255,255,255,.16)';ctx.lineWidth=2;ctx.strokeRect(siFX,siFY,siFW,siFH);
   // HUD
-  const hs=Math.max(10,siU*1.15);
+  const hs=Math.max(10,siU*1.15), kills=Math.floor(sScore/10);
   txt('SCORE '+sScore,siFX,siFY-siU*0.5,hs,theme.edge,'left');
+  txt('ALIENS  '+Math.min(kills,WINKILLS)+' / '+WINKILLS,siFX+siFW*0.5,siFY-siU*0.5,hs,'rgba(255,255,255,.72)');
   const iw=siU*2.6; for(let i=0;i<sLives;i++)siShipDraw(siFX+siFW-iw*0.5-i*(iw*1.05),siFY-siU*0.95,iw);
   if(siPh!=='play'){ ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(siFX,siFY,siFW,siFH);
     const ts=Math.max(16,siU*2.1);
     if(siPh==='ready'){ siShipDraw(siFX+siFW/2,siFY+siFH*0.30,siU*9);
       txt('SPACE INVADERS',siFX+siFW/2,siFY+siFH*0.52,ts,theme.edge);
-      txt('FLY & BLAST THE ALIENS',siFX+siFW/2,siFY+siFH*0.62,Math.max(9,siU*1.0),'rgba(255,255,255,.7)');
+      txt('BLAST '+WINKILLS+' ALIENS TO WIN',siFX+siFW/2,siFY+siFH*0.62,Math.max(9,siU*1.0),'rgba(255,255,255,.7)');
       txt('PRESS SPACE / TAP TO START',siFX+siFW/2,siFY+siFH*0.74,Math.max(10,siU*1.1),'#eafff0'); }
-    else { txt('GAME OVER',siFX+siFW/2,siFY+siFH*0.4,ts,'#ff9a9a');
+    else { const won=siPh==='win';
+      txt(won?'YOU WIN!':'GAME OVER',siFX+siFW/2,siFY+siFH*0.4,ts,won?'#bfffd6':'#ff9a9a');
       txt('SCORE '+sScore,siFX+siFW/2,siFY+siFH*0.54,Math.max(11,siU*1.35),'#fff');
-      txt('PRESS SPACE / TAP TO RETRY',siFX+siFW/2,siFY+siFH*0.68,Math.max(10,siU*1.1),'#eafff0'); } }
+      txt('PRESS SPACE / TAP TO '+(won?'PLAY AGAIN':'RETRY'),siFX+siFW/2,siFY+siFH*0.68,Math.max(10,siU*1.1),'#eafff0'); } }
   txt('ARROWS / WASD / DRAG = FLY   ·   SPACE = FIRE      M = MENU',siFX+siFW/2,siFY+siFH+siU*1.9,Math.max(9,siU*0.95),'rgba(255,255,255,.5)');
 }
 
