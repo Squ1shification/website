@@ -60,7 +60,7 @@ function setJump(){ GRAV=curGrav; JUMP=Math.sqrt(2*GRAV*peak); airtime=2*JUMP/GR
 function resize(){DPR=Math.max(1,Math.min(2,devicePixelRatio||1));W=innerWidth;H=innerHeight;
   cvs.width=W*DPR;cvs.height=H*DPR;cvs.style.width=W+'px';cvs.style.height=H+'px';
   ctx.setTransform(DPR,0,0,DPR,0,0);ctx.imageSmoothingEnabled=false; runnerResize(); pongResize(); siResize();}
-function siResize(){ siU=Math.max(9,Math.round(H*0.028)); siFW=Math.min(W*0.9,980); siFX=Math.round((W-siFW)/2); siFY=Math.round(H*0.20); siFH=Math.min(H*0.66,H-siFY-Math.round(H*0.06)); }
+function siResize(){ siU=Math.max(9,Math.round(H*0.026)); siFW=Math.min(W*0.9,980); siFX=Math.round((W-siFW)/2); siFY=Math.round(H*0.13); siFH=Math.min(H*0.78,H-siFY-Math.round(H*0.05)); }
 function runnerResize(){
   stripTop=Math.round(H*0.46);stripBot=Math.round(H*0.67);stripH=stripBot-stripTop;
   groundH=Math.round(stripH*0.24);floorY=stripBot-groundH;airH=floorY-stripTop;
@@ -295,13 +295,13 @@ function pRnd(){
 const INVA=["00100000100","00010001000","00111111100","01101110110","11111111111","10111111101","10100000101","00011011000"];
 const INVB=["00100000100","10010001001","10111111101","11101110111","11111111111","00111111100","00100000100","01000000010"];
 const SHIP=["....X....","...XXX...","XXXXXXXXX","XXXXXXXXX"];
-let siPh='ready',sScore=0,sLives=3,sWave=1,shipX=0,shipL=false,shipR=false,siDrag=false,siTX=null,pBul=[],eBul=[],inv=[],invDir=1,invSpd=0,siAnim=0,siFire=1.1;
+let siPh='ready',sScore=0,sLives=3,sWave=1,shipX=0,shipL=false,shipR=false,siDrag=false,siTX=null,pBul=[],eBul=[],inv=[],invDir=1,invSpd=0,siAnim=0,siFire=1.1,siDrop=0;
 function siBmp(pat,x,y,w,col){ const cell=w/pat[0].length, s=Math.ceil(cell)+0.5; ctx.fillStyle=col;
   for(let r=0;r<pat.length;r++){const row=pat[r]; for(let c=0;c<row.length;c++){const ch=row[c]; if(ch!=='0'&&ch!=='.')ctx.fillRect(Math.floor(x+c*cell),Math.floor(y+r*cell),s,s);}} }
-function siShipW(){return siU*5;} function siShipH(){return siShipW()*4/9;} function siShipY(){return siFY+siFH-siShipH()-siU*0.7;}
-function siNewWave(){ inv=[]; const cols=8,rows=4, iw=siU*4.2, ih=iw*8/11, gx=iw*0.42, gy=ih*0.6, gw=cols*iw+(cols-1)*gx, sx=siFX+(siFW-gw)/2, sy=siFY+siU*2.4;
-  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)inv.push({x:sx+c*(iw+gx),y:sy+r*(ih+gy),w:iw,h:ih,alive:true});
-  invDir=1; invSpd=siFW*(0.10+0.022*(sWave-1)); siFire=Math.max(0.5,1.2-0.1*(sWave-1)); }
+function siShipW(){return siU*4.2;} function siShipH(){return siShipW()*4/9;} function siShipY(){return siFY+siFH-siShipH()-siU*0.7;}
+function siNewWave(){ inv=[]; const cols=8,rows=4, iw=Math.min(siU*3.4,siFW*0.84/cols), ih=iw*8/11, gx=iw*0.5, gy=ih*0.45, gw=cols*iw+(cols-1)*gx, sx=siFX+(siFW-gw)/2, sy=siFY+ih*0.9, step=ih+gy;
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)inv.push({x:sx+c*(iw+gx),y:sy+r*step,w:iw,h:ih,alive:true});
+  invDir=1; invSpd=siFW*(0.11+0.02*(sWave-1)); siDrop=ih*0.4; siFire=Math.max(0.5,1.2-0.1*(sWave-1)); }
 function siEnter(){ sScore=0;sLives=3;sWave=1;shipX=W/2;shipL=false;shipR=false;siDrag=false;siTX=null;pBul=[];eBul=[];siPh='ready';setTheme();siNewWave(); }
 function siFireP(){ if(pBul.length<3)pBul.push({x:shipX,y:siShipY()-2}); }
 function siStart(){ if(siPh==='ready'){siPh='play';} else if(siPh==='over'){siEnter();siPh='play';} else return false; return true; }
@@ -322,7 +322,7 @@ function siUpd(dt){
   let minX=1e9,maxX=-1e9; const alive=inv.filter(v=>v.alive);
   if(alive.length===0){ sWave++; siNewWave(); return; }
   alive.forEach(v=>{ v.x+=invSpd*invDir*dt; if(v.x<minX)minX=v.x; if(v.x+v.w>maxX)maxX=v.x+v.w; });
-  if(maxX>siFX+siFW||minX<siFX){ invDir*=-1; inv.forEach(v=>v.y+=siU*1.5); invSpd*=1.05; }
+  if(maxX>siFX+siFW||minX<siFX){ invDir*=-1; inv.forEach(v=>v.y+=siDrop); invSpd*=1.04; }
   for(const b of pBul){ for(const v of inv){ if(v.alive&&b.x>v.x&&b.x<v.x+v.w&&b.y>v.y&&b.y<v.y+v.h){ v.alive=false;b.dead=true;sScore+=10; break; } } }
   pBul=pBul.filter(b=>!b.dead);
   siFire-=dt; if(siFire<=0){ const sh=inv.filter(v=>v.alive); if(sh.length){ const s=sh[Math.floor(Math.random()*sh.length)]; eBul.push({x:s.x+s.w/2,y:s.y+s.h}); } siFire=Math.max(0.35,1.2-0.1*sWave)*(0.55+Math.random()*0.9); }
