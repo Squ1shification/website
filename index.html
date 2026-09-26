@@ -20,13 +20,9 @@
   #menu .arrow:hover{color:#eafff0;transform:scale(1.18);}
   #menu .viewport{width:min(78vw,440px);overflow:hidden;}
   #menu .cards{display:flex;transition:transform .3s cubic-bezier(.34,.1,.2,1);}
-  #menu .card{box-sizing:border-box;min-width:100%;border:2px solid #2c8f52;background:rgba(0,0,0,.4);
-     padding:clamp(22px,4.5vw,40px) 16px;text-align:center;cursor:pointer;transition:border-color .12s,box-shadow .12s;}
-  #menu .card:hover,#menu .card.sel{border-color:#7bff9e;box-shadow:0 0 24px rgba(123,255,158,.22);}
-  #menu .card .cn{color:#5f8f74;font-size:clamp(9px,1.2vw,12px);letter-spacing:4px;}
-  #menu .card .ct{color:#dff4e6;font-size:clamp(20px,3.6vw,34px);letter-spacing:2px;margin:16px 0 10px;}
-  #menu .card .cd{color:#8dffb2;font-size:clamp(10px,1.5vw,14px);letter-spacing:1px;}
-  #menu .card .cp{display:inline-block;margin-top:20px;color:#06110b;background:#7bff9e;padding:7px 18px;font-size:clamp(10px,1.4vw,13px);letter-spacing:2px;}
+  #menu .card{box-sizing:border-box;min-width:100%;display:flex;justify-content:center;align-items:center;cursor:pointer;padding:10px 0;}
+  #menu .card pre{margin:0;color:#57c47a;font-size:clamp(8px,1.7vw,17px);line-height:1.1;white-space:pre;transition:color .1s;}
+  #menu .card:hover pre,#menu .card.sel pre{color:#8dffb2;text-shadow:0 0 10px rgba(123,255,158,.4);}
   #menu .dots{display:flex;gap:11px;margin-top:6px;}
   #menu .dot{width:11px;height:11px;border:2px solid #2c8f52;border-radius:50%;cursor:pointer;transition:.12s;}
   #menu .dot.on{background:#7bff9e;border-color:#7bff9e;}
@@ -52,16 +48,28 @@
   <div id="menu">
     <div class="msel">- SELECT A GAME -</div>
     <div class="carousel">
-      <button class="arrow" id="prev" aria-label="Previous game">&#8249;</button>
+      <button class="arrow" id="prev" aria-label="Previous game">&lt;</button>
       <div class="viewport"><div class="cards" id="cards">
-        <div class="card" data-s="runner"><div class="cn">GAME 1 / 3</div><div class="ct">SKULL RUN</div><div class="cd">Leap the spikes &amp; platforms</div><div class="cp">&#9654; PLAY</div></div>
-        <div class="card" data-s="pong"><div class="cn">GAME 2 / 3</div><div class="ct">PONG</div><div class="cd">Classic paddle duel vs CPU</div><div class="cp">&#9654; PLAY</div></div>
-        <div class="card" data-s="invaders"><div class="cn">GAME 3 / 3</div><div class="ct">SPACE INVADERS</div><div class="cd">Fly &amp; blast the alien wave</div><div class="cp">&#9654; PLAY</div></div>
+        <div class="card" data-s="runner"><pre>+------------------------+
+|                        |
+|       SKULL RUN        |
+|                        |
++------------------------+</pre></div>
+        <div class="card" data-s="pong"><pre>+------------------------+
+|                        |
+|          PONG          |
+|                        |
++------------------------+</pre></div>
+        <div class="card" data-s="invaders"><pre>+------------------------+
+|                        |
+|     SPACE INVADERS     |
+|                        |
++------------------------+</pre></div>
       </div></div>
-      <button class="arrow" id="next" aria-label="Next game">&#8250;</button>
+      <button class="arrow" id="next" aria-label="Next game">&gt;</button>
     </div>
     <div class="dots" id="dots"></div>
-    <div class="mhint">&#9664; &#9654;  SWITCH   ·   [ENTER] PLAY</div>
+    <div class="mhint">&lt; &gt;  SWITCH      [ENTER] PLAY</div>
   </div>
   <button id="menubtn">[ MENU ]</button>
 <script>
