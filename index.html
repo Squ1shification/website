@@ -260,8 +260,8 @@ function pPdown(e){ if((pPh==='diff'||pPh==='over')){ pBtn(e); return; }
   pDrag=true; pMY=e.clientY; if(pPh==='serve')pPh='play'; }
 function pMove(e){ if(pDrag)pMY=e.clientY; }
 function pUpd(dt){
-  const psp=pFH*2.1;
-  if(pUp)pLy-=psp*dt; else if(pDn)pLy+=psp*dt; else if(pDrag&&pMY!=null){ const tg=pMY-pPH/2; pLy+=(tg-pLy)*Math.min(1,dt*18); }
+  const psp=pFH*3.6;
+  if(pUp)pLy-=psp*dt; else if(pDn)pLy+=psp*dt; else if(pDrag&&pMY!=null){ const tg=pMY-pPH/2; pLy+=(tg-pLy)*Math.min(1,dt*32); }
   pLy=Math.max(pFY,Math.min(pFY+pFH-pPH,pLy));
   const asp=pFH*PDIFF[pDiff].ai, dead=pPH*PDIFF[pDiff].dead, at=pBY-pPH/2; if(Math.abs(at-pRy)>dead)pRy+=Math.sign(at-pRy)*asp*dt; pRy=Math.max(pFY,Math.min(pFY+pFH-pPH,pRy));
   if(pPh!=='play')return;
