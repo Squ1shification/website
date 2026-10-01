@@ -59,7 +59,7 @@ do it, and a single bounds check closes it. <a href="winfsp.html">Here&rsquo;s t
 <div class="links-row"><a href="https://github.com/winfsp/winfsp/releases/tag/v2.2B4" target="_blank" rel="noopener">Official security release &mdash; WinFsp v2.2B4</a></div>
 
 <div class="find"><span class="fname">OpenSMTPD &mdash; turning a mail address into command execution.</span></div>
-<div class="plang">Fixed in OpenBSD&nbsp;7.9, errata&nbsp;015. CVE pending.</div>
+<div class="plang">Zero-day. Fixed in OpenBSD&nbsp;7.9, errata&nbsp;015. CVE pending.</div>
 <p>OpenSMTPD lets you build delivery commands out of pieces of the envelope, and the <code>raw</code>
 modifier is meant to scrub the dangerous characters out first. It didn&rsquo;t &mdash; the user and domain
 parts went into the delivery agent&rsquo;s environment untouched. Put the right characters in an address and
@@ -74,7 +74,7 @@ shipped as an OpenBSD errata. <a href="opensmtpd.html">I wrote it up here</a>, w
 <div class="links-row"><a href="https://ftp.openbsd.org/pub/OpenBSD/patches/7.9/common/015_smtpd.patch.sig" target="_blank" rel="noopener">Official OpenBSD 7.9 errata 015</a> <a href="https://cvsweb.openbsd.org/diff/src/usr.sbin/smtpd/mda_unpriv.c?rev=1.10&amp;prev=1.9" target="_blank" rel="noopener">commit diff (credit in log)</a></div>
 
 <div class="find"><span class="fname">Sliver C2 &mdash; crashing the server with a tiny PNG.</span></div>
-<div class="plang">CVE-2026-77622.</div>
+<div class="plang">My own CVE &mdash; CVE-2026-77622.</div>
 <p>Sliver&rsquo;s HTTP(S) listener will decode whatever PNG you send it with no cap on the decoded size, and
 the channel that gets you there only has 65,537 nonces to guess. So you brute-force your way in without any
 auth and send a few-kilobyte &ldquo;PNG boomer&rdquo; that claims to be 32767&times;32767 &mdash; decoding it
