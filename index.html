@@ -63,9 +63,11 @@ parts went into the delivery agent&rsquo;s environment untouched. Put the right 
 they survive all the way into the shell the MDA runs, which is code execution. I reported it to Gilles, who
 fixed it with a new <code>mda_escape()</code> that filters those characters across every address field; it
 shipped as an OpenBSD errata. <a href="opensmtpd.html">I wrote it up here</a>, with a short demo.
-<figure class="vid"><video controls preload="metadata" playsinline poster="assets/opensmtpd.png">
+<figure class="vid"><video controls preload="metadata" playsinline>
 <source src="assets/opensmtpd-demo.mp4" type="video/mp4"></video>
 <div class="cap">Demonstration &mdash; command injection through the raw modifier.</div></figure>
+<figure><img class="shot" src="assets/opensmtpd.png" alt="Email from the OpenSMTPD maintainer confirming the fix" loading="lazy">
+<div class="cap">The maintainer confirming the fix and the published errata.</div></figure>
 
 <div class="find"><span class="fname">Sliver C2 &mdash; crashing the server with a tiny PNG.</span>
 <span class="status">CVE-2026-77622.</span></div>
