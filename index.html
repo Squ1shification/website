@@ -54,6 +54,7 @@ through change-notifications &mdash; enough to recover kernel pointers and defea
 do it, and a single bounds check closes it. <a href="winfsp.html">Here&rsquo;s the full write-up and PoC</a>.
 <figure><img class="shot" src="assets/winfsp.png" alt="WinFsp v2.2B4 release crediting Wencheng Xue" loading="lazy">
 <div class="cap">WinFsp 2026 Beta4 release notes &mdash; &ldquo;Fixes vulnerability reported by Wencheng Xue.&rdquo;</div></figure>
+<div class="links-row"><a href="https://github.com/winfsp/winfsp/releases/tag/v2.2B4" target="_blank" rel="noopener">Official credit &mdash; WinFsp v2.2B4 release</a></div>
 
 <div class="find"><span class="fname">OpenSMTPD &mdash; turning a mail address into command execution.</span>
 <span class="status">Fixed in OpenBSD&nbsp;7.9, errata&nbsp;015. CVE pending.</span></div>
@@ -68,6 +69,7 @@ shipped as an OpenBSD errata. <a href="opensmtpd.html">I wrote it up here</a>, w
 <div class="cap">Demonstration &mdash; command injection through the raw modifier.</div></figure>
 <figure><img class="shot" src="assets/opensmtpd.png" alt="Email from the OpenSMTPD maintainer confirming the fix" loading="lazy">
 <div class="cap">The maintainer confirming the fix and the published errata.</div></figure>
+<div class="links-row"><a href="https://www.openbsd.org/errata79.html" target="_blank" rel="noopener">Official OpenBSD 7.9 errata</a> <a href="https://cvsweb.openbsd.org/diff/src/usr.sbin/smtpd/mda_unpriv.c?rev=1.10&amp;prev=1.9" target="_blank" rel="noopener">commit diff (credit in log)</a></div>
 
 <div class="find"><span class="fname">Sliver C2 &mdash; crashing the server with a tiny PNG.</span>
 <span class="status">CVE-2026-77622.</span></div>
