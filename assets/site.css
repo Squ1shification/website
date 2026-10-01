@@ -100,18 +100,29 @@ p.lead { font-size: 112%; font-style: italic; }
 p.status { font-style: italic; font-size: 90%; color: #404040; padding-left: 5px; margin-top: 2px; }
 .more { font-size: 90%; }
 
-/* certification cards (badge-based) */
-.certgrid { display: flex; flex-wrap: wrap; justify-content: center; gap: 24px; padding: 18px 5px 0; }
+/* certification cards (badge-based, solid panels + hover-grow) */
+.certgrid { display: flex; flex-wrap: wrap; justify-content: center; gap: 22px; padding: 18px 5px 0; }
 .cert {
-  flex: 0 1 250px; box-sizing: border-box;
-  border: 1px solid #b8b8d0; border-radius: 8px;
-  background-color: #f4f4ff; padding: 24px 18px 18px;
-  display: flex; flex-direction: column; align-items: center; text-align: center;
+  flex: 0 1 236px; box-sizing: border-box;
+  border: 1px solid #b0b0d0; border-radius: 8px;
+  background-color: #f4f4ff; overflow: hidden;
+  display: flex; flex-direction: column;
+  transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
 }
-.cert img.badge { max-height: 142px; max-width: 100%; width: auto; height: auto; display: block; margin: 0 auto 16px; }
-.cert .badge-slot { height: 150px; display: flex; align-items: center; justify-content: center; }
-.cert .cname { font-size: 100%; line-height: 1.3; }
-.cert .cverify { margin-top: 14px; font-size: 88%; }
+.cert:hover { border-color: #7878c0; box-shadow: 0 5px 16px rgba(0,0,0,0.14); transform: translateY(-2px); }
+.cert .badge-slot {
+  background-color: #e4e4f2; border-bottom: 2px solid #8a8ac8;
+  min-height: 164px; padding: 20px 14px;
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.cert img.badge {
+  max-height: 126px; max-width: 86%; width: auto; height: auto; display: block;
+  transition: transform 0.45s ease;
+}
+.cert:hover img.badge { transform: scale(1.25); }
+.cert .cbody { padding: 15px 14px 16px; text-align: center; display: flex; flex-direction: column; align-items: center; flex: 1; }
+.cert .cname { font-size: 97%; line-height: 1.3; }
+.cert .cverify { margin-top: 12px; font-size: 86%; }
 .eduline { padding-left: 5px; margin: 8px 0; }
 .eduline b { font-size: 105%; }
 .kit { font-weight: 600; }
@@ -140,6 +151,8 @@ p.status { font-style: italic; font-size: 90%; color: #404040; padding-left: 5px
   .me { border-color: #777; }
   .note, p.status { color: #b8b8b8; }
   figcaption, .cap { color: #aaa; }
-  .cert { background-color: #262630; border-color: #4a4a5a; }
+  .cert { background-color: #20202c; border-color: #45455a; }
+  .cert:hover { border-color: #7a7ab0; box-shadow: 0 5px 18px rgba(0,0,0,0.5); }
+  .cert .badge-slot { background-color: #12121a; border-bottom-color: #5a5a90; }
   .plang { color: #b8b8b8; }
 }
