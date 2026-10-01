@@ -7,15 +7,18 @@
 <link rel="STYLESHEET" type="text/css" href="assets/site.css">
 </head>
 <body>
-<div class="topmenu">
-<a class="topmenu" href="index.html">front</a>
-<a class="topmenu" href="index.html#research">research</a>
-<a class="topmenu" href="index.html#projects">projects</a>
-<a class="topmenu" href="education.html">education</a>
-<a class="topmenu" href="contact.html">contact</a>
-</div>
-<div class="main">
-<div class="content">
+<div id="layout">
+<nav class="sidebar">
+<div class="side-head"><a href="index.html">Wencheng Xue</a><div class="side-sub">SQU1SHIFICATION</div></div>
+<ul class="sidenav">
+<li><a href="index.html">Home</a>
+<li><a class="here" href="index.html#research">Research</a>
+<li><a href="projects.html">Projects</a>
+<li><a href="education.html">Education</a>
+<li><a href="contact.html">Contact</a>
+</ul>
+</nav>
+<main class="main-col"><div class="content">
 <div class="title" style="font-size:165%">WinFsp &mdash; Kernel Out-of-Bounds Read &amp; Pool Memory Disclosure</div>
 <p class="status">winfsp-x64.sys &middot; CWE-125 &middot; CVSS 7.1 &middot; affects v1.8&ndash;v2.2B3 &middot; Credited &mdash; v2.2B4</p>
 <p class="lead">An unprivileged local user can bugcheck the Windows kernel and leak non-paged pool memory through a missing per-record bounds check in WinFsp&rsquo;s <code>FSP_FSCTL_NOTIFY</code> handler.</p>
@@ -148,7 +151,7 @@ int wmain(void) {
 }</pre><div class="dl"><a href="assets/winfsp/poc.c" download>poc.c</a><a href="assets/winfsp/trigger.ps1" download>trigger.ps1 (PowerShell, no build step)</a><a href="assets/winfsp/disclosure-poc.cs" download>disclosure-poc.cs (leak harness)</a></div><p class="note" style="margin-top:14px">Tested under a VM snapshot. The IOCTL schedules an asynchronous kernel worker, so the machine bugchecks within a few seconds of the call.</p>
 <hr class="sep">
 <p class="back"><a href="index.html#research">&larr; back to research</a></p>
-</div>
+</div></main>
 </div>
 </body>
 </html>

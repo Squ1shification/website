@@ -7,15 +7,18 @@
 <link rel="STYLESHEET" type="text/css" href="assets/site.css">
 </head>
 <body>
-<div class="topmenu">
-<a class="topmenu" href="index.html">front</a>
-<a class="topmenu" href="index.html#research">research</a>
-<a class="topmenu" href="index.html#projects">projects</a>
-<a class="topmenu" href="education.html">education</a>
-<a class="topmenu" href="contact.html">contact</a>
-</div>
-<div class="main">
-<div class="content">
+<div id="layout">
+<nav class="sidebar">
+<div class="side-head"><a href="index.html">Wencheng Xue</a><div class="side-sub">SQU1SHIFICATION</div></div>
+<ul class="sidenav">
+<li><a href="index.html">Home</a>
+<li><a class="here" href="index.html#research">Research</a>
+<li><a href="projects.html">Projects</a>
+<li><a href="education.html">Education</a>
+<li><a href="contact.html">Contact</a>
+</ul>
+</nav>
+<main class="main-col"><div class="content">
 <div class="title" style="font-size:165%">Nextcloud &mdash; SubAdmin &rarr; DelegatedAdmin Privilege Escalation</div>
 <p class="status">Nextcloud server &middot; broken access control &middot; OCS Provisioning API &middot; Resolved</p>
 <p class="lead">A group-level SubAdmin could take over a DelegatedAdmin account and inherit instance-wide user management.</p>
@@ -38,7 +41,7 @@
 }</pre><figure><img class="shot-sidebar" src="assets/nextcloud.png" alt="HackerOne report: Nextcloud, Resolved (Closed)" loading="lazy"><figcaption>Report #3681400 &mdash; Resolved (Closed). Reporter handle and avatars redacted.</figcaption></figure>
 <hr class="sep">
 <p class="back"><a href="index.html#research">&larr; back to research</a></p>
-</div>
+</div></main>
 </div>
 </body>
 </html>

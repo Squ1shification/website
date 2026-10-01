@@ -7,22 +7,25 @@
 <link rel="STYLESHEET" type="text/css" href="assets/site.css">
 </head>
 <body>
-<div class="topmenu">
-<a class="topmenu" href="index.html">front</a>
-<a class="topmenu" href="index.html#research">research</a>
-<a class="topmenu" href="index.html#projects">projects</a>
-<a class="topmenu" href="education.html">education</a>
-<a class="topmenu" href="contact.html">contact</a>
-</div>
-<div class="main">
-<div class="content">
+<div id="layout">
+<nav class="sidebar">
+<div class="side-head"><a href="index.html">Wencheng Xue</a><div class="side-sub">SQU1SHIFICATION</div></div>
+<ul class="sidenav">
+<li><a href="index.html">Home</a>
+<li><a class="here" href="index.html#research">Research</a>
+<li><a href="projects.html">Projects</a>
+<li><a href="education.html">Education</a>
+<li><a href="contact.html">Contact</a>
+</ul>
+</nav>
+<main class="main-col"><div class="content">
 <div class="title" style="font-size:165%">OpenSMTPD &mdash; Raw-Modifier Bypass to Code Execution</div>
 <p class="status">OpenSMTPD / mda_unpriv.c &middot; env-var / command injection &middot; OpenBSD 7.9 errata 015 &middot; CVE pending</p>
 <p class="lead">Crafted email addresses could smuggle shell-significant characters through OpenSMTPD&rsquo;s <code>raw</code> variable modifier into the mail-delivery agent&rsquo;s environment, reaching command execution.</p>
 <div class="subtitle">Background</div><p>OpenSMTPD lets operators template mail-delivery commands with variables drawn from the envelope &mdash; sender and recipient user/domain, the subaddress extension, and so on. The <code>raw</code> modifier is meant to pass a value through while neutralising characters that would be dangerous to the delivery command.</p><div class="subtitle">The flaw</div><p>In <code>mda_unpriv.c</code>, when variables were expanded with the <code>raw</code> modifier, the user- and domain-derived components were written into the mail-delivery agent&rsquo;s environment <em>without filtering</em>. An attacker who controls an address component could therefore smuggle the very characters the raw modifier is supposed to strip, and have them reach the shell and scripts the MDA executes &mdash; command execution in the delivery context.</p><div class="subtitle">The fix</div><p>Reported to the OpenSMTPD maintainer and fixed in OpenBSD&nbsp;7.9. Revision&nbsp;1.10 of <code>mda_unpriv.c</code> adds <code>mda_escape()</code>, which copies each value with bounds checking and replaces every <code>MAILADDR_RAW_ESCAPE</code> character with <code>&#39;:&#39;</code>, applied to all six address fields (recipient, destination and sender user/domain) and the MDA subaddress before the environment is built. Shipped as errata&nbsp;015. A CVE assignment is pending.</p><div class="subtitle">Demonstration</div><figure class="vid"><video controls preload="metadata" playsinline poster="assets/opensmtpd.png"><source src="assets/opensmtpd-demo.mp4" type="video/mp4"></video><figcaption>Command injection through the raw modifier, end to end.</figcaption></figure><div class="subtitle">Confirmation</div><figure><img class="shot" src="assets/opensmtpd.png" alt="Maintainer email confirming the fix and errata" loading="lazy"><figcaption>The maintainer confirms the commit and published errata; the fix credits the finder in the commit log.</figcaption></figure><div class="links-row" style="margin-top:14px"><a href="https://cvsweb.openbsd.org/diff/src/usr.sbin/smtpd/mda_unpriv.c?rev=1.10&amp;prev=1.9" target="_blank" rel="noopener">cvsweb diff 1.9 &rarr; 1.10</a><a href="https://ftp.openbsd.org/pub/OpenBSD/patches/7.9/common/015_smtpd.patch.sig" target="_blank" rel="noopener">errata 015 patch</a><a href="https://github.com/Squ1shification/Raw-Modifier-Bypass-To-Code-Execution-Open-SMTPD" target="_blank" rel="noopener">write-up repo</a></div>
 <hr class="sep">
 <p class="back"><a href="index.html#research">&larr; back to research</a></p>
-</div>
+</div></main>
 </div>
 </body>
 </html>

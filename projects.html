@@ -1,0 +1,55 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Projects &mdash; Wencheng Xue</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="STYLESHEET" type="text/css" href="assets/site.css">
+</head>
+
+<body>
+<div id="layout">
+<nav class="sidebar">
+<div class="side-head"><a href="index.html">Wencheng Xue</a><div class="side-sub">SQU1SHIFICATION</div></div>
+<ul class="sidenav">
+<li><a href="index.html">Home</a>
+<li><a href="index.html#research">Research</a>
+<li><a class="here" href="projects.html">Projects</a>
+<li><a href="education.html">Education</a>
+<li><a href="contact.html">Contact</a>
+</ul>
+</nav>
+<main class="main-col"><div class="content">
+
+<div class="title">Projects</div>
+
+<div class="subtitle"><a href="https://github.com/Squ1shification/Sliver-Evasion-Suite">Sliver C2 Evasion Suite</a></div>
+<p class="status">Go &middot; 97&#9733;</p>
+<p>A four-kit defense-evasion suite for the <a href="https://github.com/BishopFox/sliver">Sliver</a> C2
+framework. Each kit targets a different part of the detection surface an operator runs into:
+<ul>
+<li><b>Crystal Palace loader</b> &mdash; a position-independent loader built with the Crystal Palace
+linker, so the beacon starts from shellcode rather than a flagged executable on disk.
+<li><b>Sleep masking</b> &mdash; encrypts the implant&rsquo;s memory while it sleeps, so in-memory
+scanners have nothing readable to match between check-ins.
+<li><b>In-memory PE execution</b> &mdash; runs PE payloads reflectively, entirely in memory, without
+dropping them to disk.
+<li><b>Remote process injection with PPID spoofing</b> &mdash; injects into a remote process while
+spoofing the parent-process ID so the new thread&rsquo;s lineage looks legitimate.
+</ul>
+
+<div class="subtitle"><a href="https://github.com/Squ1shification/PNGboomer-CVE-2026-77622">PNGboomer</a></div>
+<p class="status">Go</p>
+<p>A weaponised proof of concept for <a href="sliver.html">CVE-2026-77622</a>. It brute-forces the small
+nonce space on a Sliver HTTP(S) listener and sends a tiny crafted PNG whose declared dimensions blow up to
+gigabytes on decode, exhausting memory on the C2 server. Published as GHSA-663m-7x7m-g4fw.
+
+<div class="subtitle"><a href="https://github.com/Squ1shification/Grafana-Plugin-Enumerator-CVE-2021-43798">Grafana Plugin Enumerator</a></div>
+<p class="status">Shell</p>
+<p>A path-traversal plugin-enumeration proof of concept for Grafana CVE-2021-43798 &mdash; it walks the
+plugin endpoint to read arbitrary files off a vulnerable Grafana server.
+
+</div></main>
+</div>
+</body>
+</html>

@@ -7,15 +7,18 @@
 <link rel="STYLESHEET" type="text/css" href="assets/site.css">
 </head>
 <body>
-<div class="topmenu">
-<a class="topmenu" href="index.html">front</a>
-<a class="topmenu" href="index.html#research">research</a>
-<a class="topmenu" href="index.html#projects">projects</a>
-<a class="topmenu" href="education.html">education</a>
-<a class="topmenu" href="contact.html">contact</a>
-</div>
-<div class="main">
-<div class="content">
+<div id="layout">
+<nav class="sidebar">
+<div class="side-head"><a href="index.html">Wencheng Xue</a><div class="side-sub">SQU1SHIFICATION</div></div>
+<ul class="sidenav">
+<li><a href="index.html">Home</a>
+<li><a class="here" href="index.html#research">Research</a>
+<li><a href="projects.html">Projects</a>
+<li><a href="education.html">Education</a>
+<li><a href="contact.html">Contact</a>
+</ul>
+</nav>
+<main class="main-col"><div class="content">
 <div class="title" style="font-size:165%">Google OSS&nbsp;VRP &mdash; Carbon-lang Pre-Commit Artifact Poisoning</div>
 <p class="status">carbon-language/carbon-lang &middot; CI/CD &middot; artifact poisoning &middot; GitHub Actions &middot; Accepted</p>
 <p class="lead">A malicious fork PR could make a trusted bot post arbitrary review comments &mdash; and retarget them at any PR &mdash; by poisoning a pre-commit artifact consumed by a privileged workflow.</p>
@@ -29,7 +32,7 @@
       reviewdog -f=diff -f.diff.strip=1 -reporter=github-pr-review</pre><div class="subtitle">Impact</div><ul><li>Arbitrary review comments posted from the trusted <code>carbon-infra-bot</code> account on the PR.</li><li><b>Event-file tampering:</b> a pre-commit hook can rewrite the <code>GITHUB_EVENT_PATH</code> file before it is copied into the artifact, changing the target PR number so reviewdog posts on <em>any</em> PR.</li><li><code>harden-runner</code> in block mode stops exfiltration, but <code>api.github.com</code> stays reachable because reviewdog needs it &mdash; so the bot PAT remains usable against the GitHub API.</li></ul><div class="subtitle">Status</div><p>Accepted by Google&rsquo;s Open Source Software Vulnerability Rewards Program (OSS&nbsp;VRP).</p><figure><img class="shot" src="assets/google2.png" alt="Google OSS VRP: accepted artifact-poisoning report" loading="lazy"><figcaption>Google OSS&nbsp;VRP &mdash; the accepted artifact-poisoning finding (top, marked Accepted).</figcaption></figure>
 <hr class="sep">
 <p class="back"><a href="index.html#research">&larr; back to research</a></p>
-</div>
+</div></main>
 </div>
 </body>
 </html>

@@ -9,16 +9,18 @@
 </head>
 
 <body>
-<div class="topmenu">
-<a class="topmenu" href="index.html">front</a>
-<a class="topmenu" href="#research">research</a>
-<a class="topmenu" href="#projects">projects</a>
-<a class="topmenu" href="education.html">education</a>
-<a class="topmenu" href="contact.html">contact</a>
-</div>
-
-<div class="main">
-<div class="content">
+<div id="layout">
+<nav class="sidebar">
+<div class="side-head"><a href="index.html">Wencheng Xue</a><div class="side-sub">SQU1SHIFICATION</div></div>
+<ul class="sidenav">
+<li><a class="here" href="index.html">Home</a>
+<li><a href="index.html#research">Research</a>
+<li><a href="projects.html">Projects</a>
+<li><a href="education.html">Education</a>
+<li><a href="contact.html">Contact</a>
+</ul>
+</nav>
+<main class="main-col"><div class="content">
 
 <div class="title">Wencheng Xue</div>
 
@@ -35,9 +37,8 @@ CI/CD pipelines and cloud platforms.
 <p> <b>I earn</b> bug bounties &mdash; resolved reports with <a href="nextcloud.html">Nextcloud</a> and
 <a href="carbon.html">Google&rsquo;s OSS&nbsp;VRP</a>.
 
-<p> <b>I build</b> offensive tooling. My <a href="https://github.com/Squ1shification/Sliver-Evasion-Suite">Sliver
-C2 Evasion Suite</a> and other projects live on
-<a href="https://github.com/Squ1shification?tab=repositories">GitHub</a>.
+<p> <b>I build</b> offensive tooling. My <a href="projects.html">Sliver C2 Evasion Suite</a> and other
+projects are on the <a href="projects.html">projects page</a>.
 
 <div style="clear: both;"></div>
 
@@ -111,21 +112,15 @@ be duplicates of things already triaged from other researchers. I&rsquo;m keepin
 
 <div class="subtitle" id="projects">Projects</div>
 
-<div class="find"><span class="fname"><a href="https://github.com/Squ1shification/Sliver-Evasion-Suite">Sliver C2 Evasion Suite</a></span>
+<div class="find"><span class="fname"><a href="projects.html">Sliver C2 Evasion Suite</a></span>
 &nbsp; <span class="status">Go &middot; 97&#9733;</span></div>
-<p>A four-kit defense-evasion suite for the Sliver C2 framework: a Crystal Palace loader, sleep masking,
-in-memory PE execution, and remote process injection with PPID spoofing.
+<p>A four-kit defense-evasion suite for the Sliver C2 framework &mdash; a Crystal Palace loader, sleep
+masking, in-memory PE execution, and remote process injection with PPID spoofing.
 
-<div class="find"><span class="fname"><a href="https://github.com/Squ1shification/PNGboomer-CVE-2026-77622">PNGboomer</a></span>
-&nbsp; <span class="status">Go</span></div>
-<p>Weaponised PoC for <a href="sliver.html">CVE-2026-77622</a> &mdash; a PNG-bomb that remotely exhausts
-memory on a Sliver HTTP(S) C2 server (GHSA-663m-7x7m-g4fw).
+<p>That one plus PNGboomer, a Grafana plugin enumerator, and a few more live on the
+<a href="projects.html">projects page</a>.
 
-<div class="find"><span class="fname"><a href="https://github.com/Squ1shification/Grafana-Plugin-Enumerator-CVE-2021-43798">Grafana Plugin Enumerator</a></span>
-&nbsp; <span class="status">Shell</span></div>
-<p>Path-traversal plugin-enumeration PoC for Grafana CVE-2021-43798.
-
-</div>
+</div></main>
 </div>
 </body>
 </html>
