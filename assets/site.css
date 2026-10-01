@@ -82,7 +82,8 @@ a:hover { text-decoration: none; color: #6060c0; }
 }
 
 /* findings */
-.find { padding-left: 5px; margin-bottom: 4px; }
+.find { padding-left: 5px; margin: 26px 0 2px; }
+.subtitle + .find { margin-top: 16px; }
 .fname { font-weight: bold; font-size: 108%; }
 .status { font-style: italic; }
 .note { font-size: 80%; color: #404040; padding-left: 5px; }
@@ -92,7 +93,7 @@ img.shot-sidebar { border: 1px solid #808080; max-width: 250px; margin: 10px 0 2
 .vid video { display: block; max-width: 100%; width: 760px; border: 1px solid #808080; margin: 10px 0 2px 5px; }
 .gallery { padding-left: 5px; }
 .gallery img { border: 1px solid #808080; height: 200px; width: auto; margin: 8px 12px 0 0; vertical-align: top; }
-figure { margin: 0; }
+figure { margin: 0 0 8px; }
 figcaption, .cap { font-size: 72%; color: #555; padding-left: 5px; margin-top: 2px; }
 .dl { padding-left: 5px; font-size: 90%; }
 hr.sep { border: 0; border-top: 1px solid #b0b0b0; margin: 26px 5px; }

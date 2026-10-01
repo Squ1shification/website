@@ -43,53 +43,61 @@ C2 Evasion Suite</a> and other projects live on
 
 <div class="subtitle" id="research">Security advisories</div>
 
-<div class="find"><span class="fname">WinFsp &mdash; kernel out-of-bounds read &amp; pool memory disclosure.</span>
+<div class="find"><span class="fname">WinFsp &mdash; reading kernel memory out of a Windows filesystem driver.</span>
 <span class="status">Credited in WinFsp v2.2B4.</span></div>
-<p>A missing per-record bounds check in <code>FspVolumeNotifyWork</code> lets any local user send a
-<code>FSP_FSCTL_NOTIFY_INFO</code> record whose 16-bit <code>Size</code> claims 0xFFFF bytes. The driver
-walks ~64&nbsp;KB of adjacent non-paged pool as a wide-character path &mdash; a deterministic kernel
-bugcheck, and, through directory change-notifications, a kernel memory leak that defeats KASLR.
-<a href="winfsp.html">Full write-up &amp; PoC</a>.
+<p>WinFsp&rsquo;s kernel driver trusts a 16-bit size on every notify record, but it only ever checks that the
+size is <em>big enough</em> &mdash; never that it actually fits in the buffer you sent. So I handed it one
+record that claimed to be <code>0xFFFF</code> bytes while passing barely ten, and the driver walked ~64&nbsp;KB
+off the end of its own allocation, reading adjacent kernel pool as if it were a filename. That reliably
+bugchecks the box, and with a little pool grooming those leaked bytes come straight back to user space
+through change-notifications &mdash; enough to recover kernel pointers and defeat KASLR. Any local user can
+do it, and a single bounds check closes it. <a href="winfsp.html">Here&rsquo;s the full write-up and PoC</a>.
 <figure><img class="shot" src="assets/winfsp.png" alt="WinFsp v2.2B4 release crediting Wencheng Xue" loading="lazy">
 <div class="cap">WinFsp 2026 Beta4 release notes &mdash; &ldquo;Fixes vulnerability reported by Wencheng Xue.&rdquo;</div></figure>
 
-<div class="find"><span class="fname">OpenSMTPD (OpenBSD) &mdash; raw-modifier bypass to code execution.</span>
+<div class="find"><span class="fname">OpenSMTPD &mdash; turning a mail address into command execution.</span>
 <span class="status">Fixed in OpenBSD&nbsp;7.9, errata&nbsp;015. CVE pending.</span></div>
-<p>When OpenSMTPD expands address variables with the <code>raw</code> modifier, the user- and
-domain-derived parts reached the mail-delivery agent&rsquo;s environment unfiltered &mdash; crafted
-addresses could smuggle shell-significant characters and reach command execution. Fixed by a new
-<code>mda_escape()</code> in <code>mda_unpriv.c</code>. <a href="opensmtpd.html">Full write-up</a>.
+<p>OpenSMTPD lets you build delivery commands out of pieces of the envelope, and the <code>raw</code>
+modifier is meant to scrub the dangerous characters out first. It didn&rsquo;t &mdash; the user and domain
+parts went into the delivery agent&rsquo;s environment untouched. Put the right characters in an address and
+they survive all the way into the shell the MDA runs, which is code execution. I reported it to Gilles, who
+fixed it with a new <code>mda_escape()</code> that filters those characters across every address field; it
+shipped as an OpenBSD errata. <a href="opensmtpd.html">I wrote it up here</a>, with a short demo.
 <figure class="vid"><video controls preload="metadata" playsinline poster="assets/opensmtpd.png">
 <source src="assets/opensmtpd-demo.mp4" type="video/mp4"></video>
 <div class="cap">Demonstration &mdash; command injection through the raw modifier.</div></figure>
 
-<div class="find"><span class="fname">Sliver C2 &mdash; unauthenticated PNG-decoder memory-exhaustion DoS.</span>
+<div class="find"><span class="fname">Sliver C2 &mdash; crashing the server with a tiny PNG.</span>
 <span class="status">CVE-2026-77622.</span></div>
-<p>Sliver&rsquo;s HTTP(S) listener decodes attacker-supplied PNGs with no size limit, and its image
-channel uses only 65,537 nonces. An unauthenticated attacker brute-forces the nonce and sends a tiny
-&ldquo;PNG boomer&rdquo; (e.g. 32767&times;32767) that decompresses to gigabytes, crashing the C2 server.
-<a href="sliver.html">Full write-up</a>.
+<p>Sliver&rsquo;s HTTP(S) listener will decode whatever PNG you send it with no cap on the decoded size, and
+the channel that gets you there only has 65,537 nonces to guess. So you brute-force your way in without any
+auth and send a few-kilobyte &ldquo;PNG boomer&rdquo; that claims to be 32767&times;32767 &mdash; decoding it
+tries to allocate gigabytes and the operator&rsquo;s C2 server falls over. <a href="sliver.html">Full
+write-up</a>.
 
 <div class="subtitle" id="writeups">Bug bounties &amp; write-ups</div>
 
-<div class="find"><span class="fname">Nextcloud &mdash; SubAdmin &rarr; DelegatedAdmin privilege escalation.</span>
+<div class="find"><span class="fname">Nextcloud &mdash; climbing from a group admin to running every account.</span>
 <span class="status">Resolved.</span></div>
-<p>Nextcloud&rsquo;s access-control check blocked SubAdmins from managing full admins but forgot the
-<code>DelegatedAdmin</code> role. A SubAdmin sharing a group with a DelegatedAdmin could reset that
-account&rsquo;s password through the Provisioning API and inherit instance-wide user management.
-<a href="nextcloud.html">Full write-up</a>.
+<p>Nextcloud&rsquo;s check for whether a SubAdmin may manage another user blocks full admins but completely
+forgets the newer <code>DelegatedAdmin</code> role. If you&rsquo;re a SubAdmin and you share even one group
+with a DelegatedAdmin, you can reset their password straight through the Provisioning API and log in as them
+&mdash; and they can manage every user on the instance. Group-scoped admin to global user manager, all from
+one missing line. <a href="nextcloud.html">Full write-up</a>.
 <figure><img class="shot-sidebar" src="assets/nextcloud.png" alt="HackerOne report: Nextcloud, Resolved (Closed)" loading="lazy">
 <div class="cap">Report #3681400 &mdash; Resolved (Closed).</div></figure>
 
-<div class="find"><span class="fname">Google OSS&nbsp;VRP &mdash; Carbon-lang pre-commit artifact poisoning.</span>
+<div class="find"><span class="fname">Google OSS&nbsp;VRP &mdash; puppeting a trusted bot through a poisoned CI artifact.</span>
 <span class="status">Accepted.</span></div>
-<p>A fork&rsquo;s pre-commit hooks produced a <code>git diff</code> artifact that a privileged
-<code>workflow_run</code> job fed to <code>reviewdog</code> with a bot PAT and no fork check &mdash; letting
-a malicious PR post arbitrary review comments as the trusted bot, and retarget any PR by rewriting the
-event file. <a href="carbon.html">Full write-up</a>.
+<p>Carbon-lang runs a fork&rsquo;s pre-commit hooks and uploads the resulting <code>git diff</code> &mdash;
+plus a copy of the GitHub event &mdash; as an artifact. A second, privileged workflow then pipes that diff
+into <code>reviewdog</code> using a bot&rsquo;s token, and never checks the artifact actually came from the
+real repo. Since a fork controls both its source and its pre-commit config, it controls that diff &mdash; so
+a malicious PR can make the trusted bot post whatever review comments it likes, and by rewriting the event
+file first, aim them at any PR in the project. <a href="carbon.html">Full write-up</a>.
 
-<p><span class="big">Other reports &mdash; duplicates.</span> &nbsp;Valid issues I reported that had already
-been triaged from other researchers; kept for completeness (handles and avatars redacted).
+<p><span class="big">Other reports &mdash; duplicates.</span> &nbsp;A handful of issues I reported turned out to
+be duplicates of things already triaged from other researchers. I&rsquo;m keeping them here for completeness.
 <div class="gallery">
 <img src="assets/gitlab1.png" alt="GitLab report, duplicate, High 7.7" loading="lazy">
 <img src="assets/gitlab2.png" alt="GitLab report, duplicate, High 8.5" loading="lazy">
