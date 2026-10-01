@@ -1,259 +1,139 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Wencheng Xue — Offensive Security Research</title>
-<meta name="description" content="Wencheng Xue (Squ1shification) — offensive security researcher. Advisories, bug bounties and write-ups: WinFsp, OpenBSD/OpenSMTPD, Sliver, Nextcloud, Google OSS VRP.">
-<style>
-  :root{
-    --bg:#0e0f11; --panel:#141619; --bd:#23262b; --tx:#ccd0d4; --dim:#868b91; --hd:#eceef0;
-    --ac:#68c17f; --acd:#549e68; --red:#e06c6c; --yellow:#d8b45a;
-    --mono:ui-monospace,"SFMono-Regular","JetBrains Mono","DejaVu Sans Mono",Menlo,Consolas,monospace;
-    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  }
-  *{box-sizing:border-box}
-  html{scroll-behavior:smooth}
-  body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--mono);font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased}
-  a{color:var(--ac);text-decoration:none}
-  a:hover{text-decoration:underline}
-  header.nav{position:sticky;top:0;z-index:10;background:rgba(14,15,17,.92);backdrop-filter:blur(6px);border-bottom:1px solid var(--bd)}
-  .nav-in{max-width:880px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 20px;flex-wrap:wrap}
-  .brand{font-family:var(--sans);font-weight:700;color:var(--hd);font-size:15.5px;letter-spacing:.2px}
-  .brand b{color:var(--ac);font-weight:700}
-  nav.links{display:flex;gap:17px;flex-wrap:wrap;font-family:var(--sans);font-size:13.5px}
-  nav.links a{color:var(--dim)}
-  nav.links a:hover{color:var(--hd);text-decoration:none}
-  main{max-width:880px;margin:0 auto;padding:0 20px}
-  section{padding:48px 0;border-top:1px solid var(--bd);scroll-margin-top:62px}
-  section#home{border-top:none;padding-top:54px}
-  h1{font-family:var(--sans);font-size:clamp(29px,5.4vw,42px);line-height:1.08;color:var(--hd);margin:0 0 8px;font-weight:800;letter-spacing:-.6px}
-  .sub{color:var(--ac);font-size:14px;margin:0 0 4px}
-  .tagline{font-family:var(--sans);color:var(--dim);font-size:clamp(14px,2.3vw,18px);margin:0 0 22px;font-weight:500}
-  .lead{max-width:72ch}
-  h2{font-family:var(--sans);font-size:22px;color:var(--hd);margin:0 0 4px;font-weight:700}
-  .kicker{color:var(--acd);font-size:12px;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:16px}
-  p{margin:0 0 14px}
-  .entry{border:1px solid var(--bd);border-radius:6px;background:var(--panel);padding:18px 20px;margin:16px 0}
-  .entry h3{font-family:var(--sans);font-size:17px;color:var(--hd);margin:0 0 9px;font-weight:650}
-  .meta{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 12px}
-  .tag{border:1px solid var(--bd);border-radius:3px;padding:2px 8px;color:var(--dim);background:#0f1113;font-size:11.5px}
-  .tag.ok{color:var(--ac);border-color:#2b5236}
-  .tag.pending{color:var(--yellow);border-color:#4a3f1f}
-  .tag.cve{color:var(--red);border-color:#512a2a}
-  .entry p{font-size:14px}
-  .links-row{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:11px;font-size:13px}
-  .links-row span{color:var(--bd)}
-  figure{margin:15px 0 0}
-  figure img,.gallery img{max-width:100%;border:1px solid var(--bd);border-radius:4px;display:block}
-  figcaption{color:var(--dim);font-size:12px;margin-top:7px}
-  .shot{max-width:100%}
-  .shot-sidebar{max-width:230px}
-  .gallery{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;margin-top:14px}
-  .gallery figure{margin:0}
-  .gallery .thumb img{height:200px;width:auto}
-  .code{background:#0b0c0e;border:1px solid var(--bd);border-radius:4px;padding:10px 13px;overflow:auto;font-size:12.5px;color:#cfe3d4;margin:11px 0;white-space:pre}
-  ul{margin:2px 0 14px;padding-left:19px}
-  li{margin:4px 0}
-  .contact a{display:inline-block;margin:0 22px 8px 0;font-size:15px}
-  .note{color:var(--dim);font-size:13px}
-  footer{max-width:880px;margin:0 auto;padding:28px 20px 54px;color:var(--dim);font-size:12.5px;border-top:1px solid var(--bd)}
-  footer a{color:var(--dim)}
-  footer a:hover{color:var(--ac)}
-</style>
+<title>Wencheng Xue</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="description" content="Wencheng Xue (Squ1shification) — offensive security researcher. Security advisories, write-ups and offensive tooling: WinFsp, OpenBSD/OpenSMTPD, Sliver, Nextcloud, Google OSS VRP.">
+<link rel="STYLESHEET" type="text/css" href="assets/site.css">
 </head>
+
 <body>
+<div class="topmenu">
+<a class="topmenu" href="index.html">front</a>
+<a class="topmenu" href="#research">research</a>
+<a class="topmenu" href="#projects">projects</a>
+<a class="topmenu" href="#notes">notes</a>
+<a class="topmenu" href="#elsewhere">contact</a>
+</div>
 
-<header class="nav">
-  <div class="nav-in">
-    <div class="brand">Wencheng&nbsp;Xue&nbsp;<b>/</b>&nbsp;squ1shification</div>
-    <nav class="links">
-      <a href="#home">home</a>
-      <a href="#advisories">advisories</a>
-      <a href="#writeups">write-ups</a>
-      <a href="#resume">resume</a>
-      <a href="#contact">contact</a>
-    </nav>
-  </div>
-</header>
+<div class="main">
+<div class="content">
 
-<main>
+<div class="title">Wencheng Xue</div>
 
-  <section id="home">
-    <div class="sub">~/ offensive security</div>
-    <h1>Wencheng Xue</h1>
-    <div class="tagline">Offensive Security Researcher &amp; Student &nbsp;·&nbsp; a.k.a. <span style="color:var(--ac)">Squ1shification</span></div>
-    <div class="lead">
-      <p>I find and report vulnerabilities in real software &mdash; kernel drivers, mail servers,
-      CI/CD pipelines and cloud platforms. I&rsquo;ve been credited in security advisories by
-      <a href="#winfsp">WinFsp</a> and <a href="#opensmtpd">OpenBSD</a>, resolved bug bounties with
-      <a href="#nextcloud">Nextcloud</a> and <a href="#carbon">Google&rsquo;s OSS&nbsp;VRP</a>, and
-      have a published <a href="#sliver">CVE</a>.</p>
-      <p>This page collects the work I can talk about.</p>
-    </div>
-  </section>
+<img class="me" src="assets/profile.jpg" width="200" height="200" alt="Wencheng Xue">
 
-  <section id="advisories">
-    <div class="kicker">// security advisories</div>
-    <h2>Security Advisories</h2>
-    <p class="note">Vulnerabilities I reported that led to a fix and public credit.</p>
+<p> <b>I am</b> an offensive security researcher and student. Online I go by <b>Squ1shification</b>.
 
-    <article class="entry" id="winfsp">
-      <h3>WinFsp &mdash; Kernel Out-of-Bounds Read &amp; Pool Memory Disclosure</h3>
-      <div class="meta">
-        <span class="tag">WinFsp kernel driver</span>
-        <span class="tag">CWE-125</span>
-        <span class="tag">CVSS 7.1</span>
-        <span class="tag ok">Credited &mdash; v2.2B4</span>
-      </div>
-      <p>The kernel worker <code>FspVolumeNotifyWork</code> checks the <em>lower</em> bound of each
-      <code>FSP_FSCTL_NOTIFY_INFO</code> record&rsquo;s 16-bit <code>Size</code> field but never the
-      <em>upper</em> bound against the remaining input buffer. A single record with
-      <code>Size = 0xFFFF</code> in a ~10-byte buffer makes the driver treat adjacent non-paged pool as a
-      ~65&nbsp;KB wide-character path and walk ~64&nbsp;KB past the allocation. The device
-      <code>\Device\WinFsp.Disk</code> grants read access to <em>Everyone</em>, so any unprivileged local
-      user can reach it.</p>
-      <p>Impact is twofold: a deterministic <code>PAGE_FAULT_IN_NONPAGED_AREA</code> bugcheck (DoS), and
-      &mdash; because the walked bytes are handed back to user mode through directory change-notifications
-      &mdash; disclosure of kernel non-paged pool memory (150/150 successful leaks in testing), enough to
-      defeat KASLR. Resolved by one bounds check validating <code>Size</code> against the remaining buffer.</p>
-      <div class="code">if (NotifyInfo-&gt;Size &gt; (ULONG_PTR)NotifyInfoEnd - (ULONG_PTR)NotifyInfo)
-    break;  // missing upper-bound check</div>
-      <div class="links-row">
-        <a href="https://github.com/winfsp/winfsp/releases/tag/v2.2B4" target="_blank" rel="noopener">Release credit (v2.2B4)</a>
-      </div>
-      <figure><img class="shot" src="assets/winfsp.png" alt="WinFsp v2.2B4 release notes crediting the fix to Wencheng Xue" loading="lazy">
-        <figcaption>WinFsp 2026 Beta4 release notes &mdash; &ldquo;Fixes vulnerability reported by Wencheng Xue.&rdquo;</figcaption>
-      </figure>
-    </article>
+<p> <b>I find and report</b> vulnerabilities in real software &mdash; kernel drivers, mail servers,
+CI/CD pipelines and cloud platforms.
 
-    <article class="entry" id="opensmtpd">
-      <h3>OpenSMTPD (OpenBSD) &mdash; Raw-Modifier Bypass to Code Execution</h3>
-      <div class="meta">
-        <span class="tag">OpenSMTPD / mda_unpriv.c</span>
-        <span class="tag">Env-var / command injection</span>
-        <span class="tag">OpenBSD 7.9 errata 015</span>
-        <span class="tag pending">CVE pending</span>
-      </div>
-      <p>When OpenSMTPD expands address variables with the <code>raw</code> modifier, the user- and
-      domain-derived components were written into the mail-delivery agent&rsquo;s environment without
-      filtering. Crafted addresses could smuggle the very characters the raw modifier is meant to strip,
-      reaching command execution in the MDA context. Reported to the OpenSMTPD maintainer and fixed in
-      OpenBSD&nbsp;7.9: <code>mda_unpriv.c</code> rev&nbsp;1.10 adds <code>mda_escape()</code>, which filters
-      <code>MAILADDR_RAW_ESCAPE</code> characters across all six address fields before the environment is
-      built. CVE assignment is pending.</p>
-      <div class="links-row">
-        <a href="https://cvsweb.openbsd.org/diff/src/usr.sbin/smtpd/mda_unpriv.c?rev=1.10&amp;prev=1.9" target="_blank" rel="noopener">cvsweb diff 1.9 &rarr; 1.10</a>
-        <a href="https://ftp.openbsd.org/pub/OpenBSD/patches/7.9/common/015_smtpd.patch.sig" target="_blank" rel="noopener">errata 015 patch</a>
-        <a href="https://github.com/Squ1shification/Raw-Modifier-Bypass-To-Code-Execution-Open-SMTPD" target="_blank" rel="noopener">write-up repo</a>
-      </div>
-      <figure><img class="shot" src="assets/opensmtpd.png" alt="Email from the OpenSMTPD maintainer confirming the fix and errata" loading="lazy">
-        <figcaption>Maintainer confirmation: fix committed, OpenBSD errata published, credit in the commit log.</figcaption>
-      </figure>
-    </article>
+<p> <b>I have been credited</b> in security advisories by <a href="winfsp.html">WinFsp</a> and
+<a href="opensmtpd.html">OpenBSD</a>, and hold a published <a href="sliver.html">CVE</a>.
 
-    <article class="entry" id="sliver">
-      <h3>Sliver C2 &mdash; Unauthenticated PNG-Decoder Memory-Exhaustion DoS</h3>
-      <div class="meta">
-        <span class="tag">BishopFox Sliver</span>
-        <span class="tag">HTTP(S) listener</span>
-        <span class="tag">DoS / resource exhaustion</span>
-        <span class="tag cve">CVE-2026-77622</span>
-      </div>
-      <p>Two issues in Sliver&rsquo;s HTTP(S) implant-traffic PNG path. The encoder draws from only 65,537
-      possible nonces, making the channel brute-forceable; and the listener decodes attacker-supplied PNGs
-      with no size or dimension limit. An unauthenticated attacker brute-forces the nonce, then sends a
-      small &ldquo;PNG boomer&rdquo; (e.g. 32767&times;32767) that decompresses to gigabytes, exhausting RAM
-      and crashing the C2 server. Affects Sliver 1.7.3.</p>
-      <div class="links-row">
-        <a href="https://github.com/BishopFox/sliver/security/advisories/GHSA-663m-7x7m-g4fw" target="_blank" rel="noopener">GHSA-663m-7x7m-g4fw</a>
-        <a href="https://github.com/Squ1shification/PNGboomer-CVE-2026-77622" target="_blank" rel="noopener">PoC &amp; write-up (PNGboomer)</a>
-      </div>
-    </article>
-  </section>
+<p> <b>I earn</b> bug bounties &mdash; resolved reports with <a href="nextcloud.html">Nextcloud</a> and
+<a href="carbon.html">Google&rsquo;s OSS&nbsp;VRP</a>.
 
-  <section id="writeups">
-    <div class="kicker">// bug bounties &amp; write-ups</div>
-    <h2>Bug Bounties &amp; Write-ups</h2>
-    <p class="note">Reported through vendor programs and HackerOne. Technical summaries below; third-party handles and avatars in screenshots are redacted.</p>
+<p> <b>I build</b> offensive tooling. My <a href="https://github.com/Squ1shification/Sliver-Evasion-Suite">Sliver
+C2 Evasion Suite</a> and other projects live on
+<a href="https://github.com/Squ1shification?tab=repositories">GitHub</a>.
 
-    <article class="entry" id="nextcloud">
-      <h3>Nextcloud &mdash; SubAdmin &rarr; DelegatedAdmin Privilege Escalation</h3>
-      <div class="meta">
-        <span class="tag">Nextcloud server</span>
-        <span class="tag">Broken access control</span>
-        <span class="tag ok">Resolved</span>
-      </div>
-      <p>Nextcloud&rsquo;s <code>SubAdmin::isUserAccessible()</code> decides whether a group admin may manage
-      another user. It correctly blocked SubAdmins from touching full <code>admin</code> accounts but never
-      checked the <code>DelegatedAdmin</code> role. A SubAdmin sharing any single group with a
-      DelegatedAdmin could reset that account&rsquo;s password or email through the OCS Provisioning API and
-      inherit its instance-wide user-management rights &mdash; a jump from group-scoped admin to global user
-      manager, and full takeover of the DelegatedAdmin account. Fixed by also rejecting DelegatedAdmin
-      targets in the access-control check.</p>
-      <figure><img class="shot-sidebar" src="assets/nextcloud.png" alt="HackerOne report sidebar: Nextcloud report, Resolved (Closed)" loading="lazy">
-        <figcaption>Report #3681400 &mdash; Resolved (Closed).</figcaption>
-      </figure>
-    </article>
+<div style="clear: both;"></div>
 
-    <article class="entry" id="carbon">
-      <h3>Google OSS&nbsp;VRP &mdash; Carbon-lang Pre-Commit Artifact Poisoning</h3>
-      <div class="meta">
-        <span class="tag">carbon-language/carbon-lang</span>
-        <span class="tag">CI/CD · artifact poisoning</span>
-        <span class="tag ok">Accepted</span>
-      </div>
-      <p>A <code>pull_request</code> workflow ran a fork&rsquo;s pre-commit hooks and uploaded the resulting
-      <code>git diff</code> plus the GitHub event file as an artifact. A privileged
-      <code>workflow_run</code> job then fed that attacker-controlled diff to <code>reviewdog</code> using a
-      bot PAT &mdash; with no same-repository/fork check. A malicious fork PR could therefore post arbitrary
-      review comments as the trusted bot account, and by rewriting the copied event file, retarget reviewdog
-      at any PR number. <code>harden-runner</code> in block mode stopped exfiltration, but
-      <code>api.github.com</code> stayed reachable. A textbook artifact-poisoning chain: untrusted fork
-      output consumed by a secrets-bearing workflow.</p>
-    </article>
+<div class="subtitle" id="research">Security advisories</div>
 
-    <h3 style="font-family:var(--sans);color:var(--hd);margin:30px 0 4px;font-size:17px;">Other reports &mdash; duplicates</h3>
-    <p class="note">Valid issues I reported that had already been triaged from other researchers. Kept here for completeness.</p>
-    <div class="gallery">
-      <figure class="thumb"><img src="assets/gitlab1.png" alt="GitLab report, duplicate, High 7.7" loading="lazy"><figcaption>GitLab &mdash; High (7.7)</figcaption></figure>
-      <figure class="thumb"><img src="assets/gitlab2.png" alt="GitLab report, duplicate, High 8.5" loading="lazy"><figcaption>GitLab &mdash; High (8.5)</figcaption></figure>
-      <figure class="thumb"><img src="assets/gitlab3.png" alt="GitLab report, duplicate, Critical 9.9" loading="lazy"><figcaption>GitLab &mdash; Critical (9.9)</figcaption></figure>
-      <figure class="thumb"><img src="assets/gitlab4.png" alt="GitLab report, duplicate, High 7-8.9" loading="lazy"><figcaption>GitLab &mdash; High (7&ndash;8.9)</figcaption></figure>
-    </div>
-    <figure style="margin-top:16px"><img class="shot" src="assets/google2.png" alt="Google OSS VRP reports: one accepted, three duplicates" loading="lazy">
-      <figcaption>Google OSS&nbsp;VRP &mdash; the accepted artifact-poisoning finding alongside related duplicates.</figcaption>
-    </figure>
-    <figure style="margin-top:12px"><img class="shot" src="assets/google1.png" alt="Google OSS VRP reports, duplicates" loading="lazy">
-      <figcaption>Further Google OSS&nbsp;VRP reports (duplicates).</figcaption>
-    </figure>
-  </section>
+<div class="find"><span class="fname">WinFsp &mdash; kernel out-of-bounds read &amp; pool memory disclosure.</span>
+<span class="status">Credited in WinFsp v2.2B4.</span></div>
+<p>A missing per-record bounds check in <code>FspVolumeNotifyWork</code> lets any local user send a
+<code>FSP_FSCTL_NOTIFY_INFO</code> record whose 16-bit <code>Size</code> claims 0xFFFF bytes. The driver
+walks ~64&nbsp;KB of adjacent non-paged pool as a wide-character path &mdash; a deterministic kernel
+bugcheck, and, through directory change-notifications, a kernel memory leak that defeats KASLR.
+<a href="winfsp.html">Full write-up &amp; PoC</a>.
+<figure><img class="shot" src="assets/winfsp.png" alt="WinFsp v2.2B4 release crediting Wencheng Xue" loading="lazy">
+<div class="cap">WinFsp 2026 Beta4 release notes &mdash; &ldquo;Fixes vulnerability reported by Wencheng Xue.&rdquo;</div></figure>
 
-  <section id="resume">
-    <div class="kicker">// resume</div>
-    <h2>Resume</h2>
-    <p>Full history of coursework, projects and findings:</p>
-    <div class="links-row" style="font-size:15px">
-      <a href="xuewe_resume.pdf" target="_blank" rel="noopener">Resume &mdash; PDF &darr;</a>
-      <a href="WenchengXue_resume.docx">Resume &mdash; DOCX &darr;</a>
-    </div>
-  </section>
+<div class="find"><span class="fname">OpenSMTPD (OpenBSD) &mdash; raw-modifier bypass to code execution.</span>
+<span class="status">Fixed in OpenBSD&nbsp;7.9, errata&nbsp;015. CVE pending.</span></div>
+<p>When OpenSMTPD expands address variables with the <code>raw</code> modifier, the user- and
+domain-derived parts reached the mail-delivery agent&rsquo;s environment unfiltered &mdash; crafted
+addresses could smuggle shell-significant characters and reach command execution. Fixed by a new
+<code>mda_escape()</code> in <code>mda_unpriv.c</code>. <a href="opensmtpd.html">Full write-up</a>.
+<figure class="vid"><video controls preload="metadata" playsinline poster="assets/opensmtpd.png">
+<source src="assets/opensmtpd-demo.mp4" type="video/mp4"></video>
+<div class="cap">Demonstration &mdash; command injection through the raw modifier.</div></figure>
 
-  <section id="contact">
-    <div class="kicker">// contact</div>
-    <h2>Contact</h2>
-    <p class="contact">
-      <a href="https://github.com/Squ1shification" target="_blank" rel="noopener">github.com/Squ1shification</a>
-      <a href="mailto:xuewencheng156@gmail.com">xuewencheng156@gmail.com</a>
-    </p>
-    <p class="note">For vulnerability details or coordinated disclosure, reach out by email.</p>
-  </section>
+<div class="find"><span class="fname">Sliver C2 &mdash; unauthenticated PNG-decoder memory-exhaustion DoS.</span>
+<span class="status">CVE-2026-77622.</span></div>
+<p>Sliver&rsquo;s HTTP(S) listener decodes attacker-supplied PNGs with no size limit, and its image
+channel uses only 65,537 nonces. An unauthenticated attacker brute-forces the nonce and sends a tiny
+&ldquo;PNG boomer&rdquo; (e.g. 32767&times;32767) that decompresses to gigabytes, crashing the C2 server.
+<a href="sliver.html">Full write-up</a>.
 
-</main>
+<div class="subtitle" id="writeups">Bug bounties &amp; write-ups</div>
 
-<footer>
-  Wencheng Xue (薛文成) &mdash; Squ1shification &nbsp;·&nbsp; offensive security research
-</footer>
+<div class="find"><span class="fname">Nextcloud &mdash; SubAdmin &rarr; DelegatedAdmin privilege escalation.</span>
+<span class="status">Resolved.</span></div>
+<p>Nextcloud&rsquo;s access-control check blocked SubAdmins from managing full admins but forgot the
+<code>DelegatedAdmin</code> role. A SubAdmin sharing a group with a DelegatedAdmin could reset that
+account&rsquo;s password through the Provisioning API and inherit instance-wide user management.
+<a href="nextcloud.html">Full write-up</a>.
+<figure><img class="shot-sidebar" src="assets/nextcloud.png" alt="HackerOne report: Nextcloud, Resolved (Closed)" loading="lazy">
+<div class="cap">Report #3681400 &mdash; Resolved (Closed).</div></figure>
 
+<div class="find"><span class="fname">Google OSS&nbsp;VRP &mdash; Carbon-lang pre-commit artifact poisoning.</span>
+<span class="status">Accepted.</span></div>
+<p>A fork&rsquo;s pre-commit hooks produced a <code>git diff</code> artifact that a privileged
+<code>workflow_run</code> job fed to <code>reviewdog</code> with a bot PAT and no fork check &mdash; letting
+a malicious PR post arbitrary review comments as the trusted bot, and retarget any PR by rewriting the
+event file. <a href="carbon.html">Full write-up</a>.
+
+<p><span class="big">Other reports &mdash; duplicates.</span> &nbsp;Valid issues I reported that had already
+been triaged from other researchers; kept for completeness (handles and avatars redacted).
+<div class="gallery">
+<img src="assets/gitlab1.png" alt="GitLab report, duplicate, High 7.7" loading="lazy">
+<img src="assets/gitlab2.png" alt="GitLab report, duplicate, High 8.5" loading="lazy">
+<img src="assets/gitlab3.png" alt="GitLab report, duplicate, Critical 9.9" loading="lazy">
+<img src="assets/gitlab4.png" alt="GitLab report, duplicate, High 7-8.9" loading="lazy">
+</div>
+<figure><img class="shot" src="assets/google2.png" alt="Google OSS VRP: accepted plus duplicates" loading="lazy">
+<div class="cap">Google OSS&nbsp;VRP &mdash; the accepted artifact-poisoning finding alongside related duplicates.</div></figure>
+<figure><img class="shot" src="assets/google1.png" alt="Google OSS VRP duplicates" loading="lazy">
+<div class="cap">Further Google OSS&nbsp;VRP reports (duplicates).</div></figure>
+
+<div class="subtitle" id="projects">Projects</div>
+
+<div class="find"><span class="fname"><a href="https://github.com/Squ1shification/Sliver-Evasion-Suite">Sliver C2 Evasion Suite</a></span>
+&nbsp; <span class="status">Go &middot; 97&#9733;</span></div>
+<p>A four-kit defense-evasion suite for the Sliver C2 framework: a Crystal Palace loader, sleep masking,
+in-memory PE execution, and remote process injection with PPID spoofing.
+
+<div class="find"><span class="fname"><a href="https://github.com/Squ1shification/PNGboomer-CVE-2026-77622">PNGboomer</a></span>
+&nbsp; <span class="status">Go</span></div>
+<p>Weaponised PoC for <a href="sliver.html">CVE-2026-77622</a> &mdash; a PNG-bomb that remotely exhausts
+memory on a Sliver HTTP(S) C2 server (GHSA-663m-7x7m-g4fw).
+
+<div class="find"><span class="fname"><a href="https://github.com/Squ1shification/Grafana-Plugin-Enumerator-CVE-2021-43798">Grafana Plugin Enumerator</a></span>
+&nbsp; <span class="status">Shell</span></div>
+<p>Path-traversal plugin-enumeration PoC for Grafana CVE-2021-43798.
+
+<div class="subtitle" id="notes">Notes &amp; study</div>
+<p>Public study notes and cheat sheets from the certifications and tracks I work through:
+<ul>
+<li><a href="https://github.com/Squ1shification/OSEP-Notes">OSEP</a> &mdash; PEN-300, evasion &amp; breaching defenses
+<li><a href="https://github.com/Squ1shification/CRTO-Notes">CRTO</a> &mdash; Red Team Ops
+<li><a href="https://github.com/Squ1shification/CRTL-Notes">CRTL</a> &mdash; Red Team Ops II (C2, loader dev, EDR evasion)
+<li><a href="https://github.com/Squ1shification/CRTE-Notes">CRTE</a> &amp; <a href="https://github.com/Squ1shification/CRTP-Notes">CRTP</a> &mdash; Active Directory attack &amp; defense
+<li><a href="https://github.com/Squ1shification/CAPE-Notes">CAPE</a> &mdash; HTB Certified AD Pentesting Expert
+<li><a href="https://github.com/Squ1shification/ACPT-Notes">ACPT</a> &mdash; Altered Security Certified Pentesting Technician
+</ul>
+
+<div class="subtitle" id="elsewhere">Wencheng elsewhere</div>
+<p>
+<a href="https://github.com/Squ1shification" rel="me">GitHub</a> |
+<a href="mailto:xuewencheng156@gmail.com">Email</a>
+
+</div>
+</div>
 </body>
 </html>

