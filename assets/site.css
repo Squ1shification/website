@@ -100,19 +100,19 @@ p.lead { font-size: 112%; font-style: italic; }
 p.status { font-style: italic; font-size: 90%; color: #404040; padding-left: 5px; margin-top: 2px; }
 .more { font-size: 90%; }
 
-/* certification cards (floating) */
-.certgrid { display: flex; flex-wrap: wrap; gap: 14px; padding: 8px 5px 0; }
+/* certification cards (badge-based, mirrors portfolio) */
+.certgrid { display: flex; flex-wrap: wrap; gap: 16px; padding: 12px 5px 0; }
 .cert {
-  flex: 1 1 230px; max-width: 300px;
-  border: 1px solid #000; border-radius: 4px;
-  background-color: #f0f0ff; padding: 12px 14px;
+  flex: 0 1 196px; box-sizing: border-box;
+  border: 1px solid #b8b8d0; border-radius: 8px;
+  background-color: #f7f7ff; padding: 16px 14px 12px;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
 }
-.cert .abbr {
-  font-family: "DejaVu Sans Mono", Consolas, monospace;
-  font-weight: bold; font-size: 95%; color: #3030a0; letter-spacing: 1px;
-}
-.cert .cname { font-weight: bold; font-size: 90%; margin: 4px 0 2px; line-height: 1.25; }
-.cert .issuer { font-size: 72%; color: #555; font-style: italic; }
+.cert img.badge { height: 96px; width: auto; max-width: 100%; display: block; margin-bottom: 11px; }
+.cert .cname { font-weight: bold; font-size: 83%; line-height: 1.28; }
+.cert .cmeta { font-size: 70%; color: #555; margin-top: 5px; }
+.cert .cmeta .code { font-family: "DejaVu Sans Mono", Consolas, monospace; color: #3030a0; }
+.cert .cverify { margin-top: 10px; font-size: 71%; }
 .eduline { padding-left: 5px; margin: 8px 0; }
 .eduline b { font-size: 105%; }
 
@@ -139,7 +139,7 @@ p.status { font-style: italic; font-size: 90%; color: #404040; padding-left: 5px
   .me { border-color: #777; }
   .note, p.status { color: #b8b8b8; }
   figcaption, .cap { color: #aaa; }
-  .cert { background-color: #2a2a3a; border-color: #555; }
-  .cert .abbr { color: #a0a0ff; }
-  .cert .issuer { color: #aaa; }
+  .cert { background-color: #262630; border-color: #4a4a5a; }
+  .cert .cmeta { color: #aaa; }
+  .cert .cmeta .code { color: #a0a0ff; }
 }
