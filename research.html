@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Research | Wencheng Xue</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="description" content="Vulnerability research and bug bounties by Wencheng Xue: WinFsp, OpenSMTPD, Sliver, Nextcloud, Google OSS VRP.">
+<link rel="STYLESHEET" type="text/css" href="assets/site.css">
+</head>
+
+<body>
+<div id="layout">
+<nav class="sidebar">
+<ul class="sidenav">
+<li><a href="index.html">Home</a>
+<li><a class="here" href="research.html">Research</a>
+<li><a href="projects.html">Projects</a>
+<li><a href="education.html">Education</a>
+<li><a href="contact.html">Contact</a>
+</ul>
+</nav>
+<main class="main-col"><div class="content">
+
+<div class="title">Research</div>
+
+<p>Bugs I have found and reported. They all got fixed and credited, and each one links to the full
+write-up.</p>
+
+<div class="subtitle" id="winfsp">WinFsp: kernel out-of-bounds read</div>
+<div class="plang">Credited in WinFsp v2.2B4.</div>
+<p>WinFsp&rsquo;s kernel driver reads a 16-bit size off every notify record and only checks that it is
+big enough, never that it fits the buffer you sent. Send a record claiming <code>0xFFFF</code> bytes in a
+ten-byte buffer and the driver walks about 64&nbsp;KB past its own allocation, reading kernel pool as if it
+were a filename. That bugchecks the machine, and with a bit of pool grooming the leaked bytes come back to
+user space through change-notifications, which is enough to break KASLR. Any local user can do it, and one
+bounds check fixes it. <a href="winfsp.html">Full write-up and PoC</a>.
+<figure><img class="shot" src="assets/winfsp.png" alt="WinFsp v2.2B4 release crediting Wencheng Xue" loading="lazy">
+<div class="cap">WinFsp 2026 Beta4 release notes: &ldquo;Fixes vulnerability reported by Wencheng Xue.&rdquo;</div></figure>
+<figure><img class="shot" src="assets/winfsp2.png" alt="Email from the WinFsp author confirming the fix and the credit" loading="lazy">
+<div class="cap">The WinFsp author confirming the fix.</div></figure>
+<div class="links-row"><a href="https://github.com/winfsp/winfsp/releases/tag/v2.2B4" target="_blank" rel="noopener">WinFsp v2.2B4 release</a></div>
+
+<div class="subtitle" id="opensmtpd">OpenSMTPD: raw-modifier bypass to RCE</div>
+<div class="plang">Zero-day. Fixed in OpenBSD&nbsp;7.9, errata&nbsp;015. CVE pending.</div>
+<p>OpenSMTPD builds delivery commands from pieces of the envelope, and the <code>raw</code> modifier is
+supposed to strip the dangerous characters first. It didn&rsquo;t. The user and domain parts reached the
+delivery agent&rsquo;s environment untouched, so the right characters in an address survive into the shell
+the MDA runs. I reported it to Gilles, who fixed it with a new <code>mda_escape()</code> across every
+address field. It shipped as an OpenBSD errata. <a href="opensmtpd.html">I wrote it up here</a>, with a
+short demo.
+<figure class="vid"><video controls preload="metadata" playsinline>
+<source src="assets/opensmtpd-demo.mp4" type="video/mp4"></video>
+<div class="cap">Command injection through the raw modifier.</div></figure>
+<figure><img class="shot" src="assets/opensmtpd.png" alt="Email from the OpenSMTPD maintainer confirming the fix" loading="lazy">
+<div class="cap">The maintainer confirming the fix and the errata.</div></figure>
+<div class="links-row"><a href="https://ftp.openbsd.org/pub/OpenBSD/patches/7.9/common/015_smtpd.patch.sig" target="_blank" rel="noopener">OpenBSD 7.9 errata 015</a> <a href="https://cvsweb.openbsd.org/diff/src/usr.sbin/smtpd/mda_unpriv.c?rev=1.10&amp;prev=1.9" target="_blank" rel="noopener">commit diff</a></div>
+
+<div class="subtitle" id="sliver">Sliver C2: unauthenticated PNG DoS</div>
+<div class="plang">My own CVE: CVE-2026-77622.</div>
+<p>Sliver&rsquo;s HTTP(S) listener decodes any PNG you send it with no cap on the decoded size, and the
+channel in front of it has only 65,537 nonces to guess. So you brute-force your way in with no auth and send
+a few-kilobyte PNG that claims to be 32767&times;32767. Decoding it tries to allocate gigabytes, and the C2
+server falls over. <a href="sliver.html">Full write-up</a>.
+
+<div class="subtitle" id="nextcloud">Nextcloud: SubAdmin to global user manager</div>
+<div class="plang">Resolved.</div>
+<p>Nextcloud&rsquo;s check for whether a SubAdmin can manage a user blocks full admins but forgets the newer
+<code>DelegatedAdmin</code> role. Share one group with a DelegatedAdmin and you can reset their password over
+the Provisioning API and log in as them, and they manage every account on the instance. One missing line.
+<a href="nextcloud.html">Full write-up</a>.
+<figure><img class="shot-sidebar" src="assets/nextcloud.png" alt="HackerOne report: Nextcloud, Resolved (Closed)" loading="lazy">
+<div class="cap">Report #3681400, Resolved (Closed).</div></figure>
+
+<div class="subtitle" id="google">Google OSS&nbsp;VRP: CI artifact poisoning</div>
+<div class="plang">Accepted.</div>
+<p>Carbon-lang runs a fork&rsquo;s pre-commit hooks and uploads the resulting <code>git diff</code>, plus a
+copy of the GitHub event, as an artifact. A privileged workflow then feeds that diff to <code>reviewdog</code>
+with a bot token and never checks it came from the real repo. A fork controls its own diff, so a malicious PR
+can make the bot post whatever it wants, and by rewriting the event file first you can aim it at any PR.
+<a href="carbon.html">Full write-up</a>.
+
+<p><span class="big">Duplicates.</span> &nbsp;Some of what I reported turned out to be duplicates of things
+other researchers had already filed. There are more than these; these are just the ones worth showing.
+<div class="gallery">
+<img src="assets/gitlab1.png" alt="GitLab report, duplicate, High 7.7" loading="lazy">
+<img src="assets/gitlab2.png" alt="GitLab report, duplicate, High 8.5" loading="lazy">
+<img src="assets/gitlab3.png" alt="GitLab report, duplicate, Critical 9.9" loading="lazy">
+<img src="assets/gitlab4.png" alt="GitLab report, duplicate, High 7-8.9" loading="lazy">
+</div>
+<div class="cap">GitLab reports (via HackerOne).</div>
+<figure><img class="shot" src="assets/google2.png" alt="Google OSS VRP: accepted plus duplicates" loading="lazy">
+<div class="cap">Google OSS&nbsp;VRP: the accepted finding with related duplicates.</div></figure>
+<figure><img class="shot" src="assets/google1.png" alt="Google OSS VRP duplicates" loading="lazy">
+<div class="cap">More Google OSS&nbsp;VRP reports (duplicates).</div></figure>
+
+</div></main>
+</div>
+</body>
+</html>

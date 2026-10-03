@@ -4,7 +4,7 @@
 <title>Wencheng Xue</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<meta name="description" content="Wencheng Xue (Squ1shification) — offensive security researcher. Security advisories, write-ups and offensive tooling: WinFsp, OpenBSD/OpenSMTPD, Sliver, Nextcloud, Google OSS VRP.">
+<meta name="description" content="Wencheng Xue (Squ1shification), offensive security researcher and student. Vulnerability research, bug bounties and offensive tooling.">
 <link rel="STYLESHEET" type="text/css" href="assets/site.css">
 </head>
 
@@ -13,8 +13,8 @@
 <nav class="sidebar">
 <ul class="sidenav">
 <li><a class="here" href="index.html">Home</a>
-<li><a href="index.html#research">Research</a>
-<li><a href="index.html#projects">Projects</a>
+<li><a href="research.html">Research</a>
+<li><a href="projects.html">Projects</a>
 <li><a href="education.html">Education</a>
 <li><a href="contact.html">Contact</a>
 </ul>
@@ -25,118 +25,30 @@
 
 <img class="me" src="assets/profile.jpg" width="200" height="200" alt="Wencheng Xue">
 
-<p> <b>I am</b> an offensive security researcher and student. Online I go by <b>Squ1shification</b>.
+<p> <b>I am Wencheng Xue</b>, though online I mostly go by <b>Squ1shification</b>. I do offensive
+security, and I am a student.
 
-<p> <b>I find and report</b> vulnerabilities in real software &mdash; kernel drivers, mail servers,
-CI/CD pipelines and cloud platforms.
+<p> <b>I find</b> bugs in software people actually run: kernel drivers, mail servers, CI/CD
+pipelines, cloud apps. It usually comes down to one missing check. A size nobody validated, a role
+the access-control code forgot about, an artifact nobody authenticated.
 
-<p> <b>I have been credited</b> in security advisories by <a href="winfsp.html">WinFsp</a> and
-<a href="opensmtpd.html">OpenBSD</a>, and hold a published <a href="sliver.html">CVE</a>.
+<p> <b>I have been credited</b> in advisories by <a href="winfsp.html">WinFsp</a> and
+<a href="opensmtpd.html">OpenBSD</a>, and I have a <a href="sliver.html">CVE</a> of my own in Sliver.
+I also have a resolved report with <a href="research.html">Nextcloud</a> and an accepted one in
+<a href="research.html">Google&rsquo;s OSS&nbsp;VRP</a>. The write-ups are on the
+<a href="research.html">research</a> page.
 
-<p> <b>I earn</b> bug bounties &mdash; resolved reports with <a href="nextcloud.html">Nextcloud</a> and
-<a href="carbon.html">Google&rsquo;s OSS&nbsp;VRP</a>.
+<p> <b>I write</b> offensive tooling, mostly a <a href="projects.html">Sliver C2 evasion suite</a>
+and some smaller proof-of-concept code. It is on the <a href="projects.html">projects</a> page.
 
-<p> <b>I build</b> offensive tooling &mdash; a <a href="index.html#projects">Sliver C2 Evasion Suite</a>
-and other projects, <a href="index.html#projects">below</a>.
+<p> <b>I study</b> red teaming through SANS SEC565 and SEC560, and I am doing a cybersecurity degree
+at the University of Cincinnati. I hold the OffSec OSCE3, and I am working on GPEN and GRTP. The rest
+is on my <a href="education.html">education</a> page.
+
+<p> <b>My code</b> is on <a href="https://github.com/Squ1shification" rel="me">GitHub</a>. The
+<a href="contact.html">contact</a> page has the rest.
 
 <div style="clear: both;"></div>
-
-<div class="subtitle" id="research">Security advisories</div>
-
-<div class="find"><span class="fname">WinFsp &mdash; reading kernel memory out of a Windows filesystem driver.</span></div>
-<div class="plang">Credited in WinFsp v2.2B4.</div>
-<p>WinFsp&rsquo;s kernel driver trusts a 16-bit size on every notify record, but it only ever checks that the
-size is <em>big enough</em> &mdash; never that it actually fits in the buffer you sent. So I handed it one
-record that claimed to be <code>0xFFFF</code> bytes while passing barely ten, and the driver walked ~64&nbsp;KB
-off the end of its own allocation, reading adjacent kernel pool as if it were a filename. That reliably
-bugchecks the box, and with a little pool grooming those leaked bytes come straight back to user space
-through change-notifications &mdash; enough to recover kernel pointers and defeat KASLR. Any local user can
-do it, and a single bounds check closes it. <a href="winfsp.html">Here&rsquo;s the full write-up and PoC</a>.
-<figure><img class="shot" src="assets/winfsp.png" alt="WinFsp v2.2B4 release crediting Wencheng Xue" loading="lazy">
-<div class="cap">WinFsp 2026 Beta4 release notes &mdash; &ldquo;Fixes vulnerability reported by Wencheng Xue.&rdquo;</div></figure>
-<figure><img class="shot" src="assets/winfsp2.png" alt="Email from the WinFsp author confirming the fix and the credit" loading="lazy">
-<div class="cap">The WinFsp author confirming the fix and crediting it in the release notes.</div></figure>
-<div class="links-row"><a href="https://github.com/winfsp/winfsp/releases/tag/v2.2B4" target="_blank" rel="noopener">Official security release &mdash; WinFsp v2.2B4</a></div>
-
-<div class="find"><span class="fname">OpenSMTPD &mdash; turning a mail address into command execution.</span></div>
-<div class="plang">Zero-day. Fixed in OpenBSD&nbsp;7.9, errata&nbsp;015. CVE pending.</div>
-<p>OpenSMTPD lets you build delivery commands out of pieces of the envelope, and the <code>raw</code>
-modifier is meant to scrub the dangerous characters out first. It didn&rsquo;t &mdash; the user and domain
-parts went into the delivery agent&rsquo;s environment untouched. Put the right characters in an address and
-they survive all the way into the shell the MDA runs, which is code execution. I reported it to Gilles, who
-fixed it with a new <code>mda_escape()</code> that filters those characters across every address field; it
-shipped as an OpenBSD errata. <a href="opensmtpd.html">I wrote it up here</a>, with a short demo.
-<figure class="vid"><video controls preload="metadata" playsinline>
-<source src="assets/opensmtpd-demo.mp4" type="video/mp4"></video>
-<div class="cap">Demonstration &mdash; command injection through the raw modifier.</div></figure>
-<figure><img class="shot" src="assets/opensmtpd.png" alt="Email from the OpenSMTPD maintainer confirming the fix" loading="lazy">
-<div class="cap">The maintainer confirming the fix and the published errata.</div></figure>
-<div class="links-row"><a href="https://ftp.openbsd.org/pub/OpenBSD/patches/7.9/common/015_smtpd.patch.sig" target="_blank" rel="noopener">Official OpenBSD 7.9 errata 015</a> <a href="https://cvsweb.openbsd.org/diff/src/usr.sbin/smtpd/mda_unpriv.c?rev=1.10&amp;prev=1.9" target="_blank" rel="noopener">commit diff (credit in log)</a></div>
-
-<div class="find"><span class="fname">Sliver C2 &mdash; crashing the server with a tiny PNG.</span></div>
-<div class="plang">My own CVE &mdash; CVE-2026-77622.</div>
-<p>Sliver&rsquo;s HTTP(S) listener will decode whatever PNG you send it with no cap on the decoded size, and
-the channel that gets you there only has 65,537 nonces to guess. So you brute-force your way in without any
-auth and send a few-kilobyte &ldquo;PNG boomer&rdquo; that claims to be 32767&times;32767 &mdash; decoding it
-tries to allocate gigabytes and the operator&rsquo;s C2 server falls over. <a href="sliver.html">Full
-write-up</a>.
-
-<div class="subtitle" id="writeups">Bug bounties &amp; write-ups</div>
-
-<div class="find"><span class="fname">Nextcloud &mdash; climbing from a group admin to running every account.</span></div>
-<div class="plang">Resolved.</div>
-<p>Nextcloud&rsquo;s check for whether a SubAdmin may manage another user blocks full admins but completely
-forgets the newer <code>DelegatedAdmin</code> role. If you&rsquo;re a SubAdmin and you share even one group
-with a DelegatedAdmin, you can reset their password straight through the Provisioning API and log in as them
-&mdash; and they can manage every user on the instance. Group-scoped admin to global user manager, all from
-one missing line. <a href="nextcloud.html">Full write-up</a>.
-<figure><img class="shot-sidebar" src="assets/nextcloud.png" alt="HackerOne report: Nextcloud, Resolved (Closed)" loading="lazy">
-<div class="cap">Report #3681400 &mdash; Resolved (Closed).</div></figure>
-
-<div class="find"><span class="fname">Google OSS&nbsp;VRP &mdash; puppeting a trusted bot through a poisoned CI artifact.</span></div>
-<div class="plang">Accepted.</div>
-<p>Carbon-lang runs a fork&rsquo;s pre-commit hooks and uploads the resulting <code>git diff</code> &mdash;
-plus a copy of the GitHub event &mdash; as an artifact. A second, privileged workflow then pipes that diff
-into <code>reviewdog</code> using a bot&rsquo;s token, and never checks the artifact actually came from the
-real repo. Since a fork controls both its source and its pre-commit config, it controls that diff &mdash; so
-a malicious PR can make the trusted bot post whatever review comments it likes, and by rewriting the event
-file first, aim them at any PR in the project. <a href="carbon.html">Full write-up</a>.
-
-<p><span class="big">Other reports &mdash; duplicates.</span> &nbsp;A handful of issues I reported turned out to
-be duplicates of things already triaged from other researchers. There are many more than what&rsquo;s shown
-here &mdash; these are just the most prevalent.
-<div class="gallery">
-<img src="assets/gitlab1.png" alt="GitLab report, duplicate, High 7.7" loading="lazy">
-<img src="assets/gitlab2.png" alt="GitLab report, duplicate, High 8.5" loading="lazy">
-<img src="assets/gitlab3.png" alt="GitLab report, duplicate, Critical 9.9" loading="lazy">
-<img src="assets/gitlab4.png" alt="GitLab report, duplicate, High 7-8.9" loading="lazy">
-</div>
-<div class="cap">GitLab reports (via HackerOne).</div>
-<figure><img class="shot" src="assets/google2.png" alt="Google OSS VRP: accepted plus duplicates" loading="lazy">
-<div class="cap">Google OSS&nbsp;VRP &mdash; the accepted artifact-poisoning finding alongside related duplicates.</div></figure>
-<figure><img class="shot" src="assets/google1.png" alt="Google OSS VRP duplicates" loading="lazy">
-<div class="cap">Further Google OSS&nbsp;VRP reports (duplicates).</div></figure>
-
-<div class="subtitle" id="projects">Projects</div>
-
-<div class="find"><span class="fname"><a href="https://github.com/Squ1shification/Sliver-Evasion-Suite">Sliver C2 Evasion Suite</a></span></div>
-<div class="plang">GoLang &middot; 97&#9733;</div>
-<p>A four-kit defense-evasion suite for the <a href="https://github.com/BishopFox/sliver">Sliver</a> C2 framework:
-<ul>
-<li><span class="kit">Crystal Palace loader:</span> a position-independent loader built with the Crystal Palace linker.
-<li><span class="kit">Sleep masking:</span> encrypts the beacon in memory while it sleeps.
-<li><span class="kit">In-memory PE execution:</span> runs PE payloads reflectively, in memory, without touching disk.
-<li><span class="kit">Remote process injection with PPID spoofing:</span> injects into a remote process while spoofing its parent process ID.
-</ul>
-
-<div class="find"><span class="fname"><a href="https://github.com/Squ1shification/PNGboomer-CVE-2026-77622">PNGboomer</a></span></div>
-<div class="plang">GoLang</div>
-<p>Proof of concept for <a href="sliver.html">CVE-2026-77622</a>: a tiny PNG that decodes to gigabytes and
-runs a Sliver C2 server out of memory. Published as GHSA-663m-7x7m-g4fw.
-
-<div class="find"><span class="fname"><a href="https://github.com/Squ1shification/Grafana-Plugin-Enumerator-CVE-2021-43798">Grafana Plugin Enumerator</a></span></div>
-<div class="plang">Bash</div>
-<p>A path-traversal file-read proof of concept for Grafana CVE-2021-43798.
 
 </div></main>
 </div>

@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-<title>Nextcloud SubAdmin Privilege Escalation &mdash; Wencheng Xue</title>
+<title>Nextcloud SubAdmin Privilege Escalation | Wencheng Xue</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <link rel="STYLESHEET" type="text/css" href="assets/site.css">
@@ -11,14 +11,14 @@
 <nav class="sidebar">
 <ul class="sidenav">
 <li><a href="index.html">Home</a>
-<li><a class="here" href="index.html#research">Research</a>
-<li><a href="index.html#projects">Projects</a>
+<li><a class="here" href="research.html">Research</a>
+<li><a href="projects.html">Projects</a>
 <li><a href="education.html">Education</a>
 <li><a href="contact.html">Contact</a>
 </ul>
 </nav>
 <main class="main-col"><div class="content">
-<div class="title" style="font-size:165%">Nextcloud &mdash; SubAdmin &rarr; DelegatedAdmin Privilege Escalation</div>
+<div class="title" style="font-size:165%">Nextcloud: SubAdmin &rarr; DelegatedAdmin Privilege Escalation</div>
 <p class="status">Nextcloud server &middot; broken access control &middot; OCS Provisioning API &middot; Resolved</p>
 <p class="lead">A group-level SubAdmin could take over a DelegatedAdmin account and inherit instance-wide user management.</p>
 <div class="subtitle">The roles</div><p>A <code>DelegatedAdmin</code> holds global user-management rights over <em>all</em> users. A <code>SubAdmin</code> (group admin) is limited to users in the groups they administer.</p><div class="subtitle">The flaw</div><p><code>SubAdmin::isUserAccessible()</code> decides whether a SubAdmin may manage a given user. It blocks full admins but never checks the <code>DelegatedAdmin</code> role:</p><pre class="quote">public function isUserAccessible(IUser $subadmin, IUser $user): bool {
@@ -37,9 +37,9 @@
      -d &quot;key=password&quot; -d &quot;value=NewPassw0rd!&quot;</pre><p>The request should return <code>403 Forbidden</code>; instead it returns <code>200 OK</code> and the password changes. Logging in as the DelegatedAdmin then grants instance-wide user-management rights and full takeover of that account.</p><div class="subtitle">The fix</div><p>Reject DelegatedAdmin targets in the access-control check:</p><pre class="quote">if ($this-&gt;groupManager-&gt;isAdmin($user-&gt;getUID())
     || $this-&gt;groupManager-&gt;isDelegatedAdmin($user-&gt;getUID())) {
     return false;   // protect DelegatedAdmins too
-}</pre><figure><img class="shot-sidebar" src="assets/nextcloud.png" alt="HackerOne report: Nextcloud, Resolved (Closed)" loading="lazy"><figcaption>Report #3681400 &mdash; Resolved (Closed). Reporter handle and avatars redacted.</figcaption></figure>
+}</pre><figure><img class="shot-sidebar" src="assets/nextcloud.png" alt="HackerOne report: Nextcloud, Resolved (Closed)" loading="lazy"><figcaption>Report #3681400, Resolved (Closed). Reporter handle and avatars redacted.</figcaption></figure>
 <hr class="sep">
-<p class="back"><a href="index.html#research">&larr; back to research</a></p>
+<p class="back"><a href="research.html">&larr; back to research</a></p>
 </div></main>
 </div>
 </body>

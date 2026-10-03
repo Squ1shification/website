@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-<title>WinFsp Kernel OOB Read &mdash; Wencheng Xue</title>
+<title>WinFsp Kernel OOB Read | Wencheng Xue</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <link rel="STYLESHEET" type="text/css" href="assets/site.css">
@@ -11,19 +11,19 @@
 <nav class="sidebar">
 <ul class="sidenav">
 <li><a href="index.html">Home</a>
-<li><a class="here" href="index.html#research">Research</a>
-<li><a href="index.html#projects">Projects</a>
+<li><a class="here" href="research.html">Research</a>
+<li><a href="projects.html">Projects</a>
 <li><a href="education.html">Education</a>
 <li><a href="contact.html">Contact</a>
 </ul>
 </nav>
 <main class="main-col"><div class="content">
-<div class="title" style="font-size:165%">WinFsp &mdash; Kernel Out-of-Bounds Read &amp; Pool Memory Disclosure</div>
-<p class="status">winfsp-x64.sys &middot; CWE-125 &middot; CVSS 7.1 &middot; affects v1.8&ndash;v2.2B3 &middot; Credited &mdash; v2.2B4</p>
+<div class="title" style="font-size:165%">WinFsp: Kernel Out-of-Bounds Read and Pool Memory Disclosure</div>
+<p class="status">winfsp-x64.sys &middot; CWE-125 &middot; CVSS 7.1 &middot; affects v1.8 through v2.2B3 &middot; Credited in v2.2B4</p>
 <p class="lead">An unprivileged local user can bugcheck the Windows kernel and leak non-paged pool memory through a missing per-record bounds check in WinFsp&rsquo;s <code>FSP_FSCTL_NOTIFY</code> handler.</p>
-<div class="subtitle">The bug</div><p>The <code>FSP_FSCTL_NOTIFY</code> IOCTL accepts a user buffer holding a sequence of <code>FSP_FSCTL_NOTIFY_INFO</code> records, each carrying its own 16-bit <code>Size</code>. The kernel worker <code>FspVolumeNotifyWork</code> checks <code>Size &gt;= sizeof(FSP_FSCTL_NOTIFY_INFO)</code> (a lower bound) but never checks that <code>Size</code> fits within the remaining input buffer (the missing upper bound). A single record with <code>Size = 0xFFFF</code> inside a ~10&ndash;12&nbsp;byte buffer makes the driver compute <code>FileName.Length = 0xFFFF &minus; 12 = 65,523</code> and treat the few bytes of adjacent kernel pool after the record as a 65&nbsp;KB wide-character path. <code>FspFileNameIsValid</code> then walks that range one <code>WCHAR</code> at a time, reading ~64&nbsp;KB past the allocation.</p><div class="subtitle">Reachability</div><p>The device object <code>\Device\WinFsp.Disk</code> grants <code>GENERIC_READ</code> to <em>Everyone</em>, and opening a volume-control channel performs no additional privilege check, so any unprivileged local user can reach the vulnerable path.</p><div class="subtitle">Impact &mdash; denial of service</div><p>Independent testing on Windows&nbsp;Server&nbsp;2025 (24H2) produced a deterministic <code>0x50</code> bugcheck (<code>PAGE_FAULT_IN_NONPAGED_AREA</code>). The fault occurs at <code>winfsp-x64.sys + 0x2355c</code> during the wide-character walk, at a delta of 65,532&nbsp;bytes past the record base &mdash; matching the predicted ~64&nbsp;KB overshoot from an attacker-controlled <code>0xFFFF</code> size.</p><div class="subtitle">Impact &mdash; kernel memory disclosure</div><p>The walked bytes are handed back to a user-mode process through directory change-notifications, turning the overread into a read primitive. With pool grooming using sentinel <code>&#39;K&#39;</code> characters, the driver was shown to return bytes from separate, already-freed kernel allocations: 150/150 injections leaked memory without crashing the machine (Driver Verifier Special Pool disabled). That is enough to disclose kernel and driver pointers and defeat KASLR.</p><div class="subtitle">The fix</div><p>Both effects are resolved by validating the record <code>Size</code> against the remaining buffer before the filename walk:</p><pre class="quote">if (NotifyInfo-&gt;Size &gt; (ULONG_PTR)NotifyInfoEnd - (ULONG_PTR)NotifyInfo)
-    break;   /* reject records that overrun the input buffer */</pre><p>The report is credited in the WinFsp <a href="https://github.com/winfsp/winfsp/releases/tag/v2.2B4" target="_blank" rel="noopener">v2.2B4 release</a>.</p><figure><img class="shot" src="assets/winfsp.png" alt="WinFsp v2.2B4 release credit" loading="lazy"><figcaption>WinFsp 2026 Beta4 &mdash; &ldquo;Fixes vulnerability reported by Wencheng Xue.&rdquo;</figcaption></figure><div class="subtitle">Proof of concept</div><p><code>poc.c</code> &mdash; a self-contained trigger that opens the device, builds one record with <code>Size = 0xFFFF</code>, and fires the IOCTL:</p><pre class="quote">/*
- * PoC — WinFsp FSP_FSCTL_NOTIFY per-record Size OOB read.
+<div class="subtitle">The bug</div><p>The <code>FSP_FSCTL_NOTIFY</code> IOCTL accepts a user buffer holding a sequence of <code>FSP_FSCTL_NOTIFY_INFO</code> records, each carrying its own 16-bit <code>Size</code>. The kernel worker <code>FspVolumeNotifyWork</code> checks <code>Size &gt;= sizeof(FSP_FSCTL_NOTIFY_INFO)</code> (a lower bound) but never checks that <code>Size</code> fits within the remaining input buffer (the missing upper bound). A single record with <code>Size = 0xFFFF</code> inside a buffer of only ten to twelve bytes makes the driver compute <code>FileName.Length = 0xFFFF &minus; 12 = 65,523</code> and treat the few bytes of adjacent kernel pool after the record as a 65&nbsp;KB wide-character path. <code>FspFileNameIsValid</code> then walks that range one <code>WCHAR</code> at a time, reading ~64&nbsp;KB past the allocation.</p><div class="subtitle">Reachability</div><p>The device object <code>\Device\WinFsp.Disk</code> grants <code>GENERIC_READ</code> to <em>Everyone</em>, and opening a volume-control channel performs no additional privilege check, so any unprivileged local user can reach the vulnerable path.</p><div class="subtitle">Impact: denial of service</div><p>Independent testing on Windows&nbsp;Server&nbsp;2025 (24H2) produced a deterministic <code>0x50</code> bugcheck (<code>PAGE_FAULT_IN_NONPAGED_AREA</code>). The fault occurs at <code>winfsp-x64.sys + 0x2355c</code> during the wide-character walk, at a delta of 65,532&nbsp;bytes past the record base. That matches the predicted ~64&nbsp;KB overshoot from an attacker-controlled <code>0xFFFF</code> size.</p><div class="subtitle">Impact: kernel memory disclosure</div><p>The walked bytes are handed back to a user-mode process through directory change-notifications, turning the overread into a read primitive. With pool grooming using sentinel <code>&#39;K&#39;</code> characters, the driver was shown to return bytes from separate, already-freed kernel allocations: 150/150 injections leaked memory without crashing the machine (Driver Verifier Special Pool disabled). That is enough to disclose kernel and driver pointers and defeat KASLR.</p><div class="subtitle">The fix</div><p>Both effects are resolved by validating the record <code>Size</code> against the remaining buffer before the filename walk:</p><pre class="quote">if (NotifyInfo-&gt;Size &gt; (ULONG_PTR)NotifyInfoEnd - (ULONG_PTR)NotifyInfo)
+    break;   /* reject records that overrun the input buffer */</pre><p>The report is credited in the WinFsp <a href="https://github.com/winfsp/winfsp/releases/tag/v2.2B4" target="_blank" rel="noopener">v2.2B4 release</a>.</p><figure><img class="shot" src="assets/winfsp.png" alt="WinFsp v2.2B4 release credit" loading="lazy"><figcaption>WinFsp 2026 Beta4 release notes: &ldquo;Fixes vulnerability reported by Wencheng Xue.&rdquo;</figcaption></figure><div class="subtitle">Proof of concept</div><p><code>poc.c</code> is a self-contained trigger that opens the device, builds one record with <code>Size = 0xFFFF</code>, and fires the IOCTL:</p><pre class="quote">/*
+ * PoC: WinFsp FSP_FSCTL_NOTIFY per-record Size OOB read.
  *
  * Runs from any user account. Opens \Device\WinFsp.Disk with GENERIC_READ,
  * creates an unprivileged file-system control channel via the &#x27;\VolumeParams=&#x27;
@@ -149,7 +149,7 @@ int wmain(void) {
     return 0;
 }</pre><div class="dl"><a href="assets/winfsp/poc.c" download>poc.c</a><a href="assets/winfsp/trigger.ps1" download>trigger.ps1 (PowerShell, no build step)</a><a href="assets/winfsp/disclosure-poc.cs" download>disclosure-poc.cs (leak harness)</a></div><p class="note" style="margin-top:14px">Tested under a VM snapshot. The IOCTL schedules an asynchronous kernel worker, so the machine bugchecks within a few seconds of the call.</p>
 <hr class="sep">
-<p class="back"><a href="index.html#research">&larr; back to research</a></p>
+<p class="back"><a href="research.html">&larr; back to research</a></p>
 </div></main>
 </div>
 </body>
