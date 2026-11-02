@@ -1,0 +1,144 @@
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  src: url(lora.woff) format('woff');
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+BODY {
+ margin: 0;
+ background-color: white;
+ font-family: Lora, arial, helvetica, ariel, sans-serif;
+ font-size: 16pt;
+ color: #000040;
+}
+
+a { text-decoration: none; color: #0000c0; }
+a:hover { text-decoration: none; color: #6060c0; }
+
+/* ---------- layout: sidebar + main (jxcarver-style) ---------- */
+#layout { display: block; }
+
+.sidebar {
+  background-color: #f0f0ff;
+  border-bottom: 1px solid #c8c8e0;
+  padding: 10px 14px;
+}
+.side-head { font-size: 120%; font-weight: bold; margin-bottom: 4px; }
+.side-head a { color: #000040; }
+.side-sub { font-size: 60%; font-weight: normal; color: #6a6a8a; letter-spacing: 1px; }
+ul.sidenav { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 2px 16px; }
+ul.sidenav li { margin: 0; }
+ul.sidenav a { font-size: 90%; color: #0000c0; }
+ul.sidenav a.here { font-weight: bold; color: #000040; }
+ul.sidenav a:hover { color: #6060c0; }
+
+.main-col { min-width: 0; }
+.content {
+  padding: 16px 22px 60px 22px;
+  max-width: 62em;
+  margin: 0 auto;
+}
+
+@media (min-width: 900px) {
+  #layout { display: grid; grid-template-columns: 210px minmax(0, 1fr); align-items: start; }
+  .sidebar {
+    position: sticky; top: 0; height: 100vh;
+    border-bottom: none; border-right: 1px solid #c8c8e0;
+    padding: 34px 20px;
+  }
+  ul.sidenav { flex-direction: column; gap: 10px; margin-top: 26px; }
+  ul.sidenav a { font-size: 100%; }
+  .content { margin: 0 auto; max-width: 58em; padding: 34px 40px 72px; }
+}
+
+/* ---------- content styles (daniel.haxx.se derived) ---------- */
+.title { color: black; font-size: 200%; font-weight: bold; }
+.subtitle {
+ font-size: 140%; padding-left: 5px;
+ border-bottom: 1px solid black; margin-top: 30px;
+}
+P { color: #000040; padding-left: 5px; }
+LI { color: #000040; }
+.big { font-size: 120%; vertical-align: baseline; }
+
+.box { border: 1px solid #000; padding: 2px; }
+pre.quote {
+  border: thin solid black; padding: 8px 10px;
+  background-color: #f0f0ff;
+  font-family: "DejaVu Sans Mono", Consolas, Menlo, monospace;
+  font-size: 11pt; line-height: 1.5; overflow: auto;
+  margin-left: 5px; margin-right: 5px;
+}
+code { font-family: "DejaVu Sans Mono", Consolas, Menlo, monospace; font-size: 85%; }
+
+.me { border: 3px solid black; margin: 10px 0 20px 20px; padding: 8px; float: right; }
+
+/* findings */
+.find { padding-left: 5px; margin: 26px 0 2px; }
+.subtitle + .find, .subtitle + p .find { margin-top: 16px; }
+.fname { font-weight: bold; font-size: 123%; line-height: 1.3; }
+.status { font-style: italic; }
+.note { font-size: 80%; color: #404040; padding-left: 5px; }
+
+img.shot { border: 1px solid #808080; max-width: 100%; height: auto; margin: 10px 0 2px 5px; }
+img.shot-sidebar { border: 1px solid #808080; max-width: 250px; margin: 10px 0 2px 5px; }
+.vid video { display: block; max-width: 100%; width: 760px; border: 1px solid #808080; margin: 10px 0 2px 5px; }
+.gallery { padding-left: 5px; }
+.gallery img { border: 1px solid #808080; height: 200px; width: auto; margin: 8px 12px 0 0; vertical-align: top; }
+figure { margin: 0 0 8px; }
+figcaption, .cap { font-size: 72%; color: #555; padding-left: 5px; margin-top: 2px; }
+.dl { padding-left: 5px; font-size: 90%; }
+hr.sep { border: 0; border-top: 1px solid #b0b0b0; margin: 26px 5px; }
+.back { font-size: 90%; }
+.links-row { padding-left: 5px; font-size: 90%; margin-top: 10px; }
+.links-row a { margin-right: 18px; }
+p.lead { font-size: 112%; font-style: italic; }
+p.status { font-style: italic; font-size: 90%; color: #404040; padding-left: 5px; margin-top: 2px; }
+.more { font-size: 90%; }
+
+/* certifications — plain badges, no boxes (daniel.haxx.se 'Medals' style) */
+.certgrid { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 28px 16px; padding: 24px 5px 4px; }
+.cert { flex: 0 1 150px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.cert .badge-slot { height: 120px; display: flex; align-items: center; justify-content: center; margin-bottom: 9px; }
+.cert img.badge { max-height: 108px; max-width: 100%; width: auto; height: auto; display: block; transition: transform 0.3s ease; }
+.cert img.badge.badge-wide { max-width: 100%; max-height: 92px; }
+.cert:hover img.badge { transform: scale(1.14); }
+.cert .cbody { display: flex; flex-direction: column; align-items: center; }
+.cert .cname { font-size: 91%; line-height: 1.28; }
+.cert .cverify { margin-top: 6px; font-size: 86%; }
+.cert .abbr-badge { font-weight: bold; font-size: 44px; letter-spacing: 2px; color: #8a8aa8; }
+.cert .cstatus { margin-top: 6px; font-size: 86%; font-style: italic; color: #999; }
+.eduline { padding-left: 5px; margin: 8px 0; }
+.eduline b { font-size: 105%; }
+.kit { font-weight: 600; }
+.plang { font-style: italic; font-size: 86%; color: #555; padding-left: 5px; margin: 1px 0 2px; }
+
+@media (max-width: 480px) {
+  .me { max-width: 130px; max-height: 130px; border: 0; margin: 4px; padding: 0; float: right; }
+  BODY { font-size: 13pt; }
+}
+
+/* ---------- dark mode (mirrors daniel.haxx.se) ---------- */
+@media (prefers-color-scheme: dark) {
+  body { background-color: #212121; color: #fbfbfb; }
+  P { color: #fbfbfb; }
+  LI { color: #fbfbfb; }
+  a { color: #8080f0; }
+  a:hover { color: #b0b0ff; }
+  .title { color: #fbfbfb; }
+  .subtitle { border-bottom: 1px solid #fbfbfb; }
+  .sidebar { background-color: #2a2a2a; border-color: #4a4a4a; }
+  .side-head a { color: #fbfbfb; }
+  .side-sub { color: #9a9ab0; }
+  ul.sidenav a { color: #8080f0; }
+  ul.sidenav a.here { color: #fbfbfb; }
+  pre.quote { background-color: #1a1a2a; border-color: #888; color: #d8d8f0; }
+  .me { border-color: #777; }
+  .note, p.status { color: #b8b8b8; }
+  figcaption, .cap { color: #aaa; }
+  .plang { color: #b8b8b8; }
+}
