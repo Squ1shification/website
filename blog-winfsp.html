@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head> <title>WinFsp: Kernel Memory Disclosure and Denial of Service Through FSP_FSCTL_NOTIFY - Wencheng Xue</title> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <link rel="stylesheet" type="text/css" href="xuewe.css"> <link rel="stylesheet" type="text/css" href="content.css">  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> </head>
+
+<body>
+<div class="topmenu">
+<a class="topmenu" href="index.html">about</a>
+<a class="topmenu" href="blog.html">blog</a>
+<a class="topmenu" href="contact.html">contact</a>
+<a class="topmenu" href="documentation.html">documentation</a>
+<a class="topmenu" href="experience.html">experience</a>
+</div>
+<div class="main">
+<style>
+.content {
+    padding-top: 22px;
+    padding-bottom: 160px;
+    max-width: 680px;
+    margin-left: auto;
+    margin-right: auto;
+    font-family: 'Times New Roman', Times, serif;
+}
+.article {
+    max-width: 680px;
+}
+.post-title {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 700;
+    color: #ffffff;
+    font-size: 40px;
+    line-height: 1.08;
+    letter-spacing: -0.5px;
+    margin: 0 0 14px;
+}
+.article p {
+    font-size: 18px;
+    line-height: 1.4;
+    margin: 0 0 8px;
+    text-align: left;
+    color: #e4e4e4;
+}
+.article h2 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 700;
+    font-size: 21px;
+    color: #ffffff;
+    margin: 18px 0 6px;
+}
+.article h3 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-style: italic;
+    font-weight: 700;
+    font-size: 18px;
+    color: #e9b4b4;
+    margin: 16px 0 4px;
+}
+.equation {
+    text-align: center;
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 20px;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+    margin: 12px 0;
+}
+.article ol,
+.article ul {
+    margin: 8px 0 14px;
+    padding-left: 1.4em;
+}
+.article li {
+    font-size: 18px;
+    line-height: 1.45;
+    margin-bottom: 6px;
+    color: #e4e4e4;
+}
+.article b { color: #e9b4b4; }
+.article a:not(.backlink) {
+    color: #e9b4b4;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+.article a:not(.backlink):hover {
+    color: #ffffff;
+}
+.article code {
+    font-family: Consolas, 'DejaVu Sans Mono', Menlo, Monaco, monospace;
+    font-size: 90%;
+    color: #d98a8a;
+    overflow-wrap: break-word;
+}
+.article pre {
+    background: #161616;
+    border: 1px solid #2d2d2d;
+    border-radius: 6px;
+    padding: 12px 15px;
+    overflow-x: auto;
+    margin: 7px 0 12px;
+    line-height: 1.1;
+}
+.article pre code {
+    font-family: Consolas, 'DejaVu Sans Mono', Menlo, Monaco, monospace;
+    font-size: 12.5px;
+    line-height: 1.1;
+    color: #dcdcdc;
+    white-space: pre;
+    display: block;
+}
+.code-wrap {
+    position: relative;
+}
+.copy-btn {
+    position: absolute;
+    top: 7px;
+    right: 7px;
+    padding: 4px 9px;
+    font-family: Arial, 'Helvetica Neue', 'Segoe UI', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #cfcfcf;
+    background: #262626;
+    border: 1px solid #3d3d3d;
+    border-radius: 5px;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.12s ease, background 0.12s ease, color 0.12s ease;
+}
+.code-wrap:hover .copy-btn { opacity: 1; }
+.copy-btn:hover { background: #b35a5a; color: #ffffff; border-color: #b35a5a; }
+.copy-btn.copied { background: #2e7d46; color: #ffffff; border-color: #2e7d46; opacity: 1; }
+.article figure {
+    margin: 14px 0;
+}
+.article figure img {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #3a2626;
+    border-radius: 6px;
+    display: block;
+}
+.article figcaption {
+    font-size: 13px;
+    color: #9a9a9a;
+    margin-top: 8px;
+}
+.backlink {
+    display: inline-block;
+    margin-top: 36px;
+    padding: 10px 20px;
+    background: #b35a5a;
+    color: #ffffff;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 15px;
+    border-radius: 4px;
+}
+.backlink:hover { background: #c96d6d; color: #ffffff; }
+@media screen and (max-width: 600px) {
+    .post-title { font-size: 30px; }
+}
+</style>
+<div class="content">
+<div class="article">
+<div class="post-title">WinFsp: Kernel Memory Disclosure and Denial of Service Through FSP_FSCTL_NOTIFY</div>
+
+<h2>Introduction</h2>
+<p>While reviewing WinFsp's kernel-mode notification handling, I found a bounds-checking issue that allowed an unprivileged local user to read beyond a notification buffer. Depending on the memory layout, the same flaw could also trigger a kernel crash.</p>
+<p>The vulnerability was in the handling of <code>FSP_FSCTL_NOTIFY</code>. Each notification record contains a 16-bit <code>Size</code> field describing the length of that record, including its filename. WinFsp checked that this value was large enough to contain the structure, but never verified that the declared size actually fit inside the remaining input buffer.</p>
+<p>That missing upper-bound check allowed a record in a very small input buffer to claim a size of <code>0xFFFF</code>. The kernel then treated the filename as though it extended far beyond the memory supplied by the caller.</p>
+<p>I reported the issue to the WinFsp maintainer. The fix was included in WinFsp v2.2B4, which credits the vulnerability report.</p>
+
+<h2>Understanding the Notification Structure</h2>
+<p>I started by looking at how WinFsp represents filesystem notifications.</p>
+<p>The relevant structure is <code>FSP_FSCTL_NOTIFY_INFO</code>, defined in <code>inc/winfsp/fsctl.h</code>:</p>
+<pre><code>typedef struct
+{
+    UINT16 Size;
+    UINT32 Filter;
+    UINT32 Action;
+    WCHAR FileNameBuf[];
+} FSP_FSCTL_NOTIFY_INFO;
+FSP_FSCTL_STATIC_ASSERT(
+    12 == sizeof(FSP_FSCTL_NOTIFY_INFO),
+    "sizeof(FSP_FSCTL_NOTIFY_INFO) must be exactly 12.");</code></pre>
+<p>The structure contains the following fields:</p>
+<ul>
+<li><code>Size</code> describes the total size of the notification record.</li>
+<li><code>Filter</code> specifies the notification filter.</li>
+<li><code>Action</code> identifies the notification action.</li>
+<li><code>FileNameBuf</code> contains the filename associated with the notification.</li>
+</ul>
+<p>The fixed portion of the structure is 12 bytes. The filename follows it in the same buffer.</p>
+<p>This layout makes the <code>Size</code> field particularly important. The kernel needs to know where one notification record ends before it can safely process the next record or inspect the filename.</p>
+<p>A valid record cannot simply declare an arbitrary length. Its declared size must fit within the input buffer that contains it.</p>
+
+<h2>Finding the Missing Bounds Check</h2>
+<p>The relevant processing occurs in <code>FspVolumeNotifyWork</code>.</p>
+<p>When reviewing the notification handling, I focused on how the kernel validated the <code>Size</code> field before using the filename.</p>
+<p>The existing check enforced a lower bound: the record had to be at least as large as the fixed <code>FSP_FSCTL_NOTIFY_INFO</code> structure.</p>
+<p>That prevented obviously undersized records, but it did not establish that the record was contained within the caller's actual input buffer.</p>
+<p>There are two separate conditions that need to be checked:</p>
+<ol>
+<li>The record must be large enough to contain its fixed structure.</li>
+<li>The record must not extend beyond the remaining input buffer.</li>
+</ol>
+<p>WinFsp enforced the first condition but missed the second.</p>
+<p>This meant that a record could pass validation while declaring a length much larger than the memory actually supplied by the caller. Once the filename-processing code used that length, it could read outside the valid buffer.</p>
+<p>The issue was not in the filename itself. It was in trusting the length associated with that filename without first establishing that the length was valid.</p>
+
+<h2>Reaching the Vulnerable Code</h2>
+<p>The next question was whether an ordinary local user could reach this code path.</p>
+<p>The notification operation is exposed through the <code>FSP_FSCTL_NOTIFY</code> control code. I traced the request through the filesystem-control handling and into <code>FspVolumeNotifyWork</code>.</p>
+<p>The relevant device was:</p>
+<pre><code>\Device\WinFsp.Disk</code></pre>
+<p>The device's security permissions granted <code>GENERIC_READ</code> to <code>Everyone</code>. As a result, an unprivileged local user could obtain access to the device and reach the notification functionality without requiring administrator privileges.</p>
+<p>This mattered because the missing bounds check was not behind an administrative-only operation. The caller controlled the notification input, including the record's <code>Size</code> field, and the kernel subsequently processed that value.</p>
+<p>The result was a locally reachable kernel memory-safety issue.</p>
+
+<h2>Constructing the Malformed Notification</h2>
+<p>Once I understood the structure and the missing validation, the malformed input was straightforward.</p>
+<p>The fixed structure occupies 12 bytes. I supplied a notification record in a buffer of that size and set its <code>Size</code> field to:</p>
+<pre><code>0xFFFF</code></pre>
+<p>The value passes the existing minimum-size check because it is larger than the 12-byte structure.</p>
+<p>However, the actual input contains only 12 bytes.</p>
+<p>The filename length is derived from the declared record size after accounting for the fixed structure:</p>
+<div class="equation">0xFFFF &minus; 12 = 65,523 bytes</div>
+<p>The kernel therefore treats the filename as though it contains approximately 64 KB of data, even though the caller supplied no corresponding filename buffer.</p>
+<p>The vulnerable code eventually passes this range into <code>FspFileNameIsValid()</code>, which walks the filename one <code>WCHAR</code> at a time. Because the declared length is not constrained by the remaining input buffer, the validation routine reads beyond the valid allocation.</p>
+<p>This is the central flaw: the kernel trusts a record-relative length without verifying that the record itself is contained within the input.</p>
+
+<h2>Demonstrating the Denial of Service</h2>
+<p>I first used the malformed record to determine whether the out-of-bounds read could produce a reliable system-level failure.</p>
+<p>On Windows Server 2025 24H2, the test consistently triggered:</p>
+<pre><code>0x50 PAGE_FAULT_IN_NONPAGED_AREA</code></pre>
+<p>The fault occurred in <code>winfsp-x64.sys</code> at:</p>
+<pre><code>winfsp-x64.sys + 0x2355c</code></pre>
+<p>The crash was consistent with the filename-validation routine attempting to access memory beyond the valid notification buffer. The faulting access was approximately 65,532 bytes beyond the relevant buffer boundary.</p>
+<p>This established a practical denial-of-service condition. A local unprivileged user could submit the malformed notification and cause the operating system to bugcheck.</p>
+<p>However, I did not want to stop at demonstrating a crash. An out-of-bounds read in kernel memory can have consequences beyond availability, depending on what data occupies the adjacent memory.</p>
+<p>That led to a separate investigation into whether the same primitive could disclose kernel-pool contents.</p>
+
+<h2>Demonstrating Kernel-Pool Disclosure</h2>
+<p>For the information-disclosure test, I used a separate proof of concept designed to control the surrounding pool allocations and identify data returned through the notification mechanism.</p>
+<p>The goal was to determine whether bytes beyond the intended notification record could be recovered rather than simply causing an invalid memory access.</p>
+<p>I used pool grooming to place recognizable data in allocations adjacent to the notification buffer. This allowed me to distinguish data originating from neighboring allocations from data that was actually part of the supplied input.</p>
+<p>The test used a sentinel value so that the leaked contents could be identified in the returned notification data.</p>
+<p>Unlike the crash test, this validation was designed to avoid intentionally faulting the kernel. The goal was to observe whether the out-of-bounds read could return neighboring pool contents without terminating the system.</p>
+<p>The result was consistent across the test runs:</p>
+<ul>
+<li><b>150 out of 150</b> attempts successfully recovered data from neighboring allocations.</li>
+<li>The disclosure test completed without a system crash.</li>
+<li>Special Pool was disabled during these tests.</li>
+<li>The recovered data included kernel and driver pointers.</li>
+</ul>
+<p>This was important because kernel pointers can expose information about kernel memory layout. Depending on the surrounding data, this information can weaken protections such as Kernel Address Space Layout Randomization (KASLR).</p>
+<p>The disclosure did not establish arbitrary kernel memory access or code execution. It demonstrated that an unprivileged local user could cause kernel memory outside the supplied notification buffer to be exposed through the notification handling path.</p>
+<p>The crash and disclosure tests therefore demonstrated two distinct consequences of the same missing bounds check.</p>
+
+<h2>Root Cause</h2>
+<p>The root cause was an incomplete validation of <code>FSP_FSCTL_NOTIFY_INFO.Size</code> in <code>FspVolumeNotifyWork</code>.</p>
+<p>The existing logic checked that the record was not smaller than the fixed structure. It did not check whether the record's declared size exceeded the number of bytes remaining in the input buffer.</p>
+<p>For a record beginning at <code>NotifyInfo</code>, the upper bound needs to be calculated relative to the end of the input:</p>
+<pre><code>if (NotifyInfo-&gt;Size &gt;
+    (ULONG_PTR)NotifyInfoEnd - (ULONG_PTR)NotifyInfo)
+{
+    break;
+}</code></pre>
+<p>The important part is the comparison against the remaining buffer length, not simply the total input length.</p>
+<p>A record can be valid in isolation and still be invalid in the context of the buffer containing it. Every variable-length record needs to be checked against the actual remaining input before its contents are accessed.</p>
+
+<h2>Remediation</h2>
+<p>The fix adds the missing upper-bound validation.</p>
+<p>Before processing a notification record, WinFsp now checks whether its declared size extends beyond the remaining input buffer. If it does, processing stops rather than allowing the filename validation code to operate on an out-of-bounds range.</p>
+<p>This addresses the underlying problem rather than attempting to handle the resulting invalid memory access later in the processing path.</p>
+<p>The change was included in WinFsp v2.2B4. The release notes credit the fix as addressing a vulnerability reported by Wencheng Xue.</p>
+
+<h2>Disclosure and Testing Artifacts</h2>
+<p>I reported the issue to the WinFsp maintainer and provided separate proof-of-concept artifacts for the crash and information-disclosure behavior:</p>
+<ul>
+<li><code>poc.c</code> &mdash; proof of concept for the malformed notification.</li>
+<li><code>trigger.ps1</code> &mdash; script used to trigger the kernel crash.</li>
+<li><code>disclosure-poc.cs</code> &mdash; proof of concept for the kernel-pool disclosure.</li>
+</ul>
+<p>The maintainer addressed the issue, and the fix was included in WinFsp v2.2B4.</p>
+<figure>
+<img src="assets/blog/winfsp.png" alt="WinFsp v2.2B4 release credit">
+<figcaption>WinFsp v2.2B4 release credit.</figcaption>
+</figure>
+
+<h2>Final Thoughts</h2>
+<p>What made this finding interesting was that the initial validation looked reasonable at first glance. The code checked that a notification record was large enough to contain its fixed fields, but that check alone said nothing about whether the record actually existed in the supplied buffer.</p>
+<p>That distinction is easy to miss when reviewing variable-length structures. A length field should never be trusted simply because it passes a minimum-size check. It also needs to be validated against the memory that is actually available.</p>
+<p>The two proof-of-concept paths also reinforced why I try to investigate the full impact of a memory-safety issue rather than stopping at the first crash. The same out-of-bounds read produced a deterministic kernel bugcheck under one set of conditions and exposed neighboring kernel-pool allocations under another.</p>
+<p>For kernel code, a missing bounds check is not just a matter of malformed input handling. It can become a system-wide availability problem or expose information that should never leave kernel memory.</p>
+
+<a class="backlink" href="blog.html">&larr; Back to all posts</a>
+</div>
+</div>
+</div>
+<script>
+(function () {
+    function fallbackCopy(text, cb) {
+        var ta = document.createElement('textarea');
+        ta.value = text; ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed'; ta.style.top = '-1000px'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); } catch (e) {}
+        document.body.removeChild(ta); cb();
+    }
+    var pres = document.querySelectorAll('.article pre');
+    for (var i = 0; i < pres.length; i++) {
+        (function (pre) {
+            var code = pre.querySelector('code');
+            if (!code) return;
+            var wrap = document.createElement('div');
+            wrap.className = 'code-wrap';
+            pre.parentNode.insertBefore(wrap, pre);
+            wrap.appendChild(pre);
+            var btn = document.createElement('button');
+            btn.type = 'button'; btn.className = 'copy-btn'; btn.textContent = 'Copy';
+            btn.addEventListener('click', function () {
+                var text = code.textContent;
+                function done() {
+                    btn.textContent = 'Copied'; btn.classList.add('copied');
+                    setTimeout(function () { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1400);
+                }
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text, done); });
+                } else { fallbackCopy(text, done); }
+            });
+            wrap.appendChild(btn);
+        })(pres[i]);
+    }
+})();
+</script>
+</body></html>

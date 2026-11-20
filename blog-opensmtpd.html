@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head> <title>CAN-2026-2037511: Zero-Day Unauthenticated Command Injection Through the :raw Modifier - Wencheng Xue</title> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <link rel="stylesheet" type="text/css" href="xuewe.css"> <link rel="stylesheet" type="text/css" href="content.css">  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> </head>
+
+<body>
+<div class="topmenu">
+<a class="topmenu" href="index.html">about</a>
+<a class="topmenu" href="blog.html">blog</a>
+<a class="topmenu" href="contact.html">contact</a>
+<a class="topmenu" href="documentation.html">documentation</a>
+<a class="topmenu" href="experience.html">experience</a>
+</div>
+<div class="main">
+<style>
+.content {
+    padding-top: 22px;
+    padding-bottom: 160px;
+    max-width: 680px;
+    margin-left: auto;
+    margin-right: auto;
+    font-family: 'Times New Roman', Times, serif;
+}
+.article {
+    max-width: 680px;
+}
+.post-title {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 700;
+    color: #ffffff;
+    font-size: 40px;
+    line-height: 1.08;
+    letter-spacing: -0.5px;
+    margin: 0 0 14px;
+}
+.article p {
+    font-size: 18px;
+    line-height: 1.4;
+    margin: 0 0 8px;
+    text-align: left;
+    color: #e4e4e4;
+}
+.article h2 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 700;
+    font-size: 21px;
+    color: #ffffff;
+    margin: 18px 0 6px;
+}
+.article h3 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-style: italic;
+    font-weight: 700;
+    font-size: 18px;
+    color: #e9b4b4;
+    margin: 16px 0 4px;
+}
+.article ol,
+.article ul {
+    margin: 8px 0 14px;
+    padding-left: 1.4em;
+}
+.article li {
+    font-size: 18px;
+    line-height: 1.45;
+    margin-bottom: 6px;
+    color: #e4e4e4;
+}
+.article b { color: #e9b4b4; }
+.article a:not(.backlink) {
+    color: #e9b4b4;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+.article a:not(.backlink):hover {
+    color: #ffffff;
+}
+.article code {
+    font-family: Consolas, 'DejaVu Sans Mono', Menlo, Monaco, monospace;
+    font-size: 90%;
+    color: #d98a8a;
+    overflow-wrap: break-word;
+}
+.article pre {
+    background: #161616;
+    border: 1px solid #2d2d2d;
+    border-radius: 6px;
+    padding: 12px 15px;
+    overflow-x: auto;
+    margin: 7px 0 12px;
+    line-height: 1.1;
+}
+.article pre code {
+    font-family: Consolas, 'DejaVu Sans Mono', Menlo, Monaco, monospace;
+    font-size: 12.5px;
+    line-height: 1.1;
+    color: #dcdcdc;
+    white-space: pre;
+    display: block;
+}
+.code-wrap {
+    position: relative;
+}
+.copy-btn {
+    position: absolute;
+    top: 7px;
+    right: 7px;
+    padding: 4px 9px;
+    font-family: Arial, 'Helvetica Neue', 'Segoe UI', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #cfcfcf;
+    background: #262626;
+    border: 1px solid #3d3d3d;
+    border-radius: 5px;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.12s ease, background 0.12s ease, color 0.12s ease;
+}
+.code-wrap:hover .copy-btn { opacity: 1; }
+.copy-btn:hover { background: #b35a5a; color: #ffffff; border-color: #b35a5a; }
+.copy-btn.copied { background: #2e7d46; color: #ffffff; border-color: #2e7d46; opacity: 1; }
+.article figure {
+    margin: 14px 0;
+}
+.article figure img,
+.article figure video {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #3a2626;
+    border-radius: 6px;
+    display: block;
+}
+.article figcaption {
+    font-size: 13px;
+    color: #9a9a9a;
+    margin-top: 8px;
+}
+.backlink {
+    display: inline-block;
+    margin-top: 36px;
+    padding: 10px 20px;
+    background: #b35a5a;
+    color: #ffffff;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 15px;
+    border-radius: 4px;
+}
+.backlink:hover { background: #c96d6d; color: #ffffff; }
+@media screen and (max-width: 600px) {
+    .post-title { font-size: 30px; }
+}
+</style>
+<div class="content">
+<div class="article">
+<div class="post-title">CAN-2026-2037511: Zero-Day Unauthenticated Command Injection Through the :raw Modifier</div>
+
+<h2>Introduction</h2>
+<p>While reviewing OpenSMTPD's mail delivery implementation, I found a command-injection vulnerability that allowed an unauthenticated SMTP client to influence command execution through attacker-controlled email address components.</p>
+<p>The issue affected OpenSMTPD 7.8.0p1 (Portable) and involved the way SMTP envelope data was processed before being passed to a Mail Delivery Agent (MDA). More specifically, the interaction between the <code>:raw</code> token modifier, address sanitization, and MDA environment construction created paths through which shell-significant characters could reach command execution.</p>
+<p>The vulnerability is tracked as <b>CAN-2026-2037511</b> and classified as CWE-78 (OS Command Injection).</p>
+<p>What made this finding interesting was that OpenSMTPD already had sanitization mechanisms in place. The problem was that those protections did not remain consistent across the different stages of MDA processing. A value that was treated as an email address during SMTP handling could later be interpreted as part of a shell command.</p>
+<p>I reported the issue to the OpenSMTPD developers on August 24, 2026. The finding was reproduced by a developer on September 4, and a fix was committed on September 6. OpenBSD subsequently published errata 015 for OpenBSD 7.9.</p>
+
+<h2>Understanding the MDA Execution Path</h2>
+<p>Before looking at the vulnerability, it is important to understand how OpenSMTPD handles mail delivery.</p>
+<p>When an SMTP client submits a message, OpenSMTPD processes the sender and recipient addresses and constructs the envelope information used during delivery. Depending on the server's configuration, the message may eventually be passed to a Mail Delivery Agent.</p>
+<p>An MDA is responsible for delivering the message to its destination. OpenSMTPD supports configurable delivery commands and provides a set of variables that can be expanded when constructing those commands.</p>
+<p>These variables can contain information derived from the SMTP envelope, including:</p>
+<ul>
+<li><code>SENDER</code></li>
+<li><code>LOCAL</code></li>
+<li><code>RECIPIENT</code></li>
+<li><code>DOMAIN</code></li>
+<li><code>EXTENSION</code></li>
+<li><code>ORIGINAL_RECIPIENT</code></li>
+</ul>
+<p>This functionality is useful for administrators who need to customize mail delivery. However, it also creates a security boundary: values originating from an external SMTP client must remain safe when they are inserted into commands or passed through an execution environment.</p>
+<p>I focused my investigation on the code responsible for expanding these variables and preparing the environment used by the MDA.</p>
+
+<h2>The First Sanitization Layer</h2>
+<p>The first relevant restriction occurs during SMTP address validation.</p>
+<p>OpenSMTPD uses <code>valid_localpart()</code> in <code>util.c</code> to determine which characters are accepted in an email address's local part. This prevents certain characters from entering the envelope in the first place.</p>
+<p>The implementation uses <code>MAILADDR_ALLOWED</code> to define the permitted character set.</p>
+<p>At first glance, this appears to provide a reasonable restriction. Characters that could be dangerous when interpreted by a shell are restricted before the address is accepted.</p>
+<p>However, address validation and command sanitization serve different purposes.</p>
+<p>An email address is not necessarily safe to insert into a shell command simply because it passed the application's address parser. The application still needs to account for how that value will be interpreted later.</p>
+<p>That second layer existed in OpenSMTPD's MDA variable expansion code.</p>
+
+<h2>The :raw Modifier</h2>
+<p>The most direct path I identified involved the documented <code>:raw</code> modifier in OpenSMTPD's MDA configuration language.</p>
+<p>MDA variables support modifiers that change how a value is formatted during expansion. The <code>:raw</code> modifier is intended to return the original token value without the normal escaping behavior.</p>
+<p>The relevant implementation is in <code>mda_variables.c</code>, specifically <code>mda_expand_token()</code>.</p>
+<p>During token expansion, the implementation tracks whether the <code>raw</code> modifier has been requested. The normal escaping logic was conditional on that flag:</p>
+<pre><code>if (!raw &amp;&amp; replace)
+    for (i = 0; (size_t)i &lt; strlen(tmp); ++i)
+        if (strchr(MAILADDR_ESCAPE, tmp[i]))
+            tmp[i] = ':';</code></pre>
+<p>The important detail is the <code>!raw</code> condition.</p>
+<p>When a token was expanded normally, characters contained in <code>MAILADDR_ESCAPE</code> were replaced with colons. When the <code>:raw</code> modifier was used, that escaping step was skipped.</p>
+<p>This behavior was intentional from a formatting perspective. The problem was that the modifier also bypassed a security control that the MDA execution path relied upon.</p>
+<p>Characters that survived SMTP local-part validation could therefore reach the generated command without receiving the expected shell escaping.</p>
+<p>The vulnerability was not caused by an obscure parsing mistake or an undocumented feature. It came from the interaction between an existing configuration feature and a sanitization mechanism that assumed escaping would always take place.</p>
+
+<h2>From an Email Address to Command Execution</h2>
+<p>The next step was understanding how the expanded value reached an execution context.</p>
+<p>In the MDA delivery path, OpenSMTPD constructs the command and launches it through:</p>
+<pre><code>/bin/sh -c</code></pre>
+<p>This means the expanded command is ultimately interpreted by a shell.</p>
+<p>When attacker-controlled address data is inserted into a command through a <code>:raw</code> expansion, shell-significant characters can retain their original meaning. If the resulting command contains valid shell syntax, the shell may interpret those characters as operators or command substitutions rather than ordinary address data.</p>
+<p>This is the critical transition:</p>
+<ol>
+<li>An unauthenticated SMTP client supplies an address containing attacker-controlled characters.</li>
+<li>OpenSMTPD accepts the address under its local-part validation rules.</li>
+<li>The MDA configuration expands an address-derived token using <code>:raw</code>.</li>
+<li>The normal <code>MAILADDR_ESCAPE</code> processing is skipped.</li>
+<li>The expanded value is incorporated into the MDA command.</li>
+<li><code>/bin/sh -c</code> interprets the resulting command.</li>
+</ol>
+<p>The security boundary is crossed when data that originated as an email address becomes part of a shell command.</p>
+<p>The practical impact depends on the target's MDA configuration. A system must have a custom MDA execution path that incorporates the affected values in a vulnerable way. This is not a claim that every OpenSMTPD installation is automatically exploitable regardless of its delivery configuration.</p>
+
+<h2>A Second Path: MDA Environment Variables</h2>
+<p>While investigating the command expansion logic, I also examined how OpenSMTPD constructed the environment passed to the MDA.</p>
+<p>This led to another issue in <code>mda_unpriv.c</code>.</p>
+<p>The implementation populated environment variables using values derived from the SMTP envelope. These included the sender, recipient, original recipient, local part, domain, and extension.</p>
+<p>For example, the environment was constructed using values such as:</p>
+<pre><code>xasprintf(&amp;mda_environ[idx++], "DOMAIN=%s",
+    deliver-&gt;rcpt.domain);
+xasprintf(&amp;mda_environ[idx++], "ORIGINAL_RECIPIENT=%s@%s",
+    deliver-&gt;rcpt.user, deliver-&gt;rcpt.domain);
+xasprintf(&amp;mda_environ[idx++], "RECIPIENT=%s@%s",
+    deliver-&gt;dest.user, deliver-&gt;dest.domain);
+xasprintf(&amp;mda_environ[idx++], "LOCAL=%s",
+    deliver-&gt;rcpt.user);</code></pre>
+<p>The same approach was used for <code>SENDER</code> and <code>EXTENSION</code>.</p>
+<p>These variables are legitimate MDA features, but their contents originate from data that can be influenced by an SMTP client.</p>
+<p>The problem becomes relevant when a delivery command or the program it invokes uses those values to construct another command. In particular, a shell-based delivery utility can introduce another interpretation stage through functions such as <code>system()</code>.</p>
+<p>This is a separate path from the <code>:raw</code> command-expansion issue. The two should not be confused:</p>
+<ul>
+<li>The <code>:raw</code> path can bypass the normal escaping performed during MDA command expansion.</li>
+<li>The environment path exposes envelope-derived values to the MDA process without applying the additional filtering required for that execution context.</li>
+</ul>
+<p>Both paths demonstrate the same underlying problem: values originating from an external email address were not consistently sanitized before reaching command-execution functionality.</p>
+
+<h2>Exploitation Considerations</h2>
+<p>The vulnerability was reachable through an unauthenticated SMTP connection when the target used an affected MDA configuration.</p>
+<p>One practical complication was the character restriction imposed by <code>valid_localpart()</code>. The SMTP address parser did not accept arbitrary shell syntax, so a payload had to be constructed using characters that were permitted in the local part.</p>
+<p>This did not eliminate the issue. Shell expansion provides ways to represent certain characters without including them literally. For example, <code>${IFS}</code> can represent whitespace during shell expansion.</p>
+<p>My proof of concept used this property to construct a command from an SMTP envelope value. The resulting test demonstrated command execution without requiring SMTP authentication.</p>
+<p>For validation, I used a controlled command-execution test rather than relying on an ambiguous SMTP response. The important evidence was that the value supplied through the SMTP transaction reached the MDA execution path and was interpreted by the shell.</p>
+<figure>
+<video id="osmtpd-demo" controls muted disableremoteplayback controlslist="nodownload" preload="metadata" playsinline>
+<source src="assets/blog/opensmtpd-demo.mp4" type="video/mp4">
+Your browser does not support the video tag.
+</video>
+<figcaption>Demonstration: reaching command execution on the mail server through a crafted SMTP envelope address.</figcaption>
+</figure>
+<p>The repository contains the proof-of-concept implementation and a demonstration recording:</p>
+<ul>
+<li><a href="https://github.com/Squ1shification/Raw-SMTP-code-execution" target="_blank" rel="noopener">Research repository and proof of concept</a></li>
+</ul>
+<p>The exact behavior depends on the configured MDA command and delivery path. It is therefore important to distinguish the existence of the vulnerable code path from the conditions required to reach it on a particular deployment.</p>
+
+<h2>Root Cause</h2>
+<p>The underlying issue was inconsistent sanitization across the MDA execution path.</p>
+<p>OpenSMTPD had two relevant protections:</p>
+<ol>
+<li>SMTP local-part validation restricted the characters accepted in an address.</li>
+<li>MDA variable expansion applied escaping before inserting values into commands.</li>
+</ol>
+<p>Neither protection was sufficient on its own.</p>
+<p>The <code>:raw</code> modifier could bypass the second layer, while the environment construction in <code>mda_unpriv.c</code> passed envelope-derived values to the MDA without applying equivalent filtering.</p>
+<p>The result was that the security of the delivery command depended on which expansion path was used and how the MDA subsequently handled its environment.</p>
+<p>The application was treating the same data differently at different stages. It was initially parsed as an email address, then expanded into a command or environment variable, and eventually exposed to shell interpretation.</p>
+<p>That is the central design mistake: sanitization was tied to a particular expansion path rather than being enforced consistently at the point where untrusted values crossed into command execution.</p>
+
+<h2>Remediation</h2>
+<p>The OpenBSD fix addressed both the command-expansion and environment-construction paths.</p>
+
+<h3>1. Correcting :raw escaping</h3>
+<p>In <code>mda_variables.c</code>, the patch changed how the escaping character set was selected.</p>
+<p>Previously, the <code>raw</code> flag caused the normal escaping step to be skipped. The updated implementation selects an appropriate character set based on whether the token is raw:</p>
+<pre><code>if (replace) {
+    escape = raw ? MAILADDR_RAW_ESCAPE : MAILADDR_ESCAPE;
+    for (i = 0; (size_t)i &lt; strlen(tmp); ++i)
+        if (strchr(escape, tmp[i]))
+            tmp[i] = ':';
+}</code></pre>
+<p>The important change is that <code>:raw</code> no longer means that shell-sensitive characters are left untouched.</p>
+<p>Instead, raw tokens use <code>MAILADDR_RAW_ESCAPE</code>, ensuring that the characters covered by that set are still replaced before the expanded value is used.</p>
+
+<h3>2. Sanitizing the MDA Environment</h3>
+<p>The patch also introduced <code>mda_escape()</code> in <code>mda_unpriv.c</code>.</p>
+<pre><code>static void
+mda_escape(char *dst, size_t dstsz, const char *src)
+{
+    size_t i;
+    if (strlcpy(dst, src, dstsz) &gt;= dstsz)
+        errx(1, "mda environment value too long");
+    for (i = 0; dst[i] != '\0'; i++)
+        if (strchr(MAILADDR_RAW_ESCAPE, dst[i]))
+            dst[i] = ':';
+}</code></pre>
+<p>This function performs a bounded copy of the source value and replaces characters included in <code>MAILADDR_RAW_ESCAPE</code>.</p>
+<p>The patch applies it to the sender, recipient, destination, and subaddress components before constructing the MDA environment.</p>
+<p>Specifically, it covers:</p>
+<ul>
+<li>Sender user and domain.</li>
+<li>Original recipient user and domain.</li>
+<li>Destination user and domain.</li>
+<li>MDA subaddress.</li>
+</ul>
+<p>The environment variables are then populated using these sanitized copies instead of the original envelope values.</p>
+
+<h3>3. Tightening Local-Part Validation</h3>
+<p>The patch also updates <code>MAILADDR_ALLOWED</code>.</p>
+<p>Several characters that were previously accepted, including <code>$</code>, backticks, braces, and the pipe character, are removed from the permitted set.</p>
+<p>The patch defines the additional raw-escaping character set as:</p>
+<pre><code>#define MAILADDR_RAW_ESCAPE "!#$&amp;'*?`{|}~"</code></pre>
+<p>Together, these changes address the different stages at which envelope data could reach command execution. The fix does not rely on the assumption that one layer of validation will protect every later use of the value.</p>
+
+<h2>Disclosure Timeline</h2>
+<p>I reported the vulnerability to the OpenSMTPD developers on <b>August 24, 2026</b>.</p>
+<p>The issue was independently reproduced by an OpenSMTPD developer on <b>September 4, 2026</b>. A fix was committed on September 6, modifying both <code>mda_unpriv.c</code> and <code>mda_variables.c</code>, along with the permitted local-part character set.</p>
+<p>OpenBSD subsequently published <b>errata 015 for OpenBSD 7.9</b> on September 14, 2026. The advisory describes the issue as one in which a custom MDA could execute arbitrary code as an unprivileged recipient user.</p>
+<p>The finding is tracked as <b>CAN-2026-2037511</b>.</p>
+<p>The affected software identified in my research was OpenSMTPD 7.8.0p1 (Portable). The OpenBSD errata provides the corresponding source-level remediation for OpenBSD 7.9.</p>
+<figure>
+<img src="assets/blog/opensmtpd.png" alt="Maintainer email confirming the fix and errata">
+<figcaption>The maintainer's email confirming the fix and the publication of the errata.</figcaption>
+</figure>
+
+<h2>Final Thoughts</h2>
+<p>This finding was a good example of why reviewing individual sanitization functions is not enough. The escaping logic in OpenSMTPD existed for a reason, and the <code>:raw</code> modifier also had a legitimate purpose. The problem was that the two were allowed to interact without preserving the security guarantees expected by the command-execution path.</p>
+<p>The environment-variable issue made the investigation more interesting because it showed that fixing the token-expansion behavior alone would not address every way envelope data reached the MDA.</p>
+<p>When reviewing software that builds commands from user-controlled input, I pay particular attention to every transformation between the original input and the final execution point. Data can pass through several functions, each with different assumptions about what has already been validated. A value that is safe in one context may become dangerous when it is reused in another.</p>
+<p>In this case, the SMTP address parser, MDA token expansion, environment construction, and shell execution all played a part. Understanding how those components interacted was what made it possible to identify the underlying vulnerability and demonstrate its impact.</p>
+
+<a class="backlink" href="blog.html">&larr; Back to all posts</a>
+</div>
+</div>
+</div>
+<script>
+(function () {
+    var v = document.getElementById('osmtpd-demo');
+    if (!v) return;
+    function forceMute() { v.muted = true; v.volume = 0; }
+    forceMute();
+    v.addEventListener('loadedmetadata', forceMute);
+    v.addEventListener('play', forceMute);
+    v.addEventListener('volumechange', function () {
+        if (!v.muted || v.volume > 0) forceMute();
+    });
+})();
+</script>
+<script>
+(function () {
+    function fallbackCopy(text, cb) {
+        var ta = document.createElement('textarea');
+        ta.value = text; ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed'; ta.style.top = '-1000px'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); } catch (e) {}
+        document.body.removeChild(ta); cb();
+    }
+    var pres = document.querySelectorAll('.article pre');
+    for (var i = 0; i < pres.length; i++) {
+        (function (pre) {
+            var code = pre.querySelector('code');
+            if (!code) return;
+            var wrap = document.createElement('div');
+            wrap.className = 'code-wrap';
+            pre.parentNode.insertBefore(wrap, pre);
+            wrap.appendChild(pre);
+            var btn = document.createElement('button');
+            btn.type = 'button'; btn.className = 'copy-btn'; btn.textContent = 'Copy';
+            btn.addEventListener('click', function () {
+                var text = code.textContent;
+                function done() {
+                    btn.textContent = 'Copied'; btn.classList.add('copied');
+                    setTimeout(function () { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1400);
+                }
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text, done); });
+                } else { fallbackCopy(text, done); }
+            });
+            wrap.appendChild(btn);
+        })(pres[i]);
+    }
+})();
+</script>
+</body></html>

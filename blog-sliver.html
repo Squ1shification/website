@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head> <title>CVE-2026-77622: Unauthenticated Memory Exhaustion in Sliver's HTTP(S) Listener - Wencheng Xue</title> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <link rel="stylesheet" type="text/css" href="xuewe.css"> <link rel="stylesheet" type="text/css" href="content.css">  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> </head>
+
+<body>
+<div class="topmenu">
+<a class="topmenu" href="index.html">about</a>
+<a class="topmenu" href="blog.html">blog</a>
+<a class="topmenu" href="contact.html">contact</a>
+<a class="topmenu" href="documentation.html">documentation</a>
+<a class="topmenu" href="experience.html">experience</a>
+</div>
+<div class="main">
+<style>
+.content {
+    padding-top: 22px;
+    padding-bottom: 160px;
+    max-width: 680px;
+    margin-left: auto;
+    margin-right: auto;
+    font-family: 'Times New Roman', Times, serif;
+}
+.article {
+    max-width: 680px;
+}
+.post-title {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 700;
+    color: #ffffff;
+    font-size: 40px;
+    line-height: 1.08;
+    letter-spacing: -0.5px;
+    margin: 0 0 14px;
+}
+.article p {
+    font-size: 18px;
+    line-height: 1.4;
+    margin: 0 0 8px;
+    text-align: left;
+    color: #e4e4e4;
+}
+.article h2 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 700;
+    font-size: 21px;
+    color: #ffffff;
+    margin: 18px 0 6px;
+}
+.article h3 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-style: italic;
+    font-weight: 700;
+    font-size: 18px;
+    color: #e9b4b4;
+    margin: 16px 0 4px;
+}
+.equation {
+    text-align: center;
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 20px;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+    margin: 12px 0;
+}
+.article ul {
+    margin: 8px 0 14px;
+    padding-left: 1.3em;
+}
+.article li {
+    font-size: 18px;
+    line-height: 1.45;
+    margin-bottom: 6px;
+    color: #e4e4e4;
+}
+.article table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 18px;
+    font-size: 17px;
+}
+.article th,
+.article td {
+    border: 1px solid #4a3030;
+    padding: 9px 13px;
+    text-align: left;
+    color: #eaeaea;
+    vertical-align: top;
+}
+.article th {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 700;
+    color: #ffffff;
+    background: #2a1818;
+}
+.article b { color: #e9b4b4; }
+.article a:not(.backlink) {
+    color: #e9b4b4;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+.article a:not(.backlink):hover {
+    color: #ffffff;
+}
+.backlink {
+    display: inline-block;
+    margin-top: 36px;
+    padding: 10px 20px;
+    background: #b35a5a;
+    color: #ffffff;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 15px;
+    border-radius: 4px;
+}
+.backlink:hover { background: #c96d6d; color: #ffffff; }
+@media screen and (max-width: 600px) {
+    .post-title { font-size: 30px; }
+    .article p,
+    .article li { text-align: left; }
+}
+</style>
+<div class="content">
+<div class="article">
+<div class="post-title">CVE-2026-77622: Unauthenticated Memory Exhaustion in Sliver's HTTP(S) Listener</div>
+
+<h2>The Vulnerability</h2>
+<p>I discovered a denial-of-service vulnerability in Sliver's HTTP(S) listener that allows an unauthenticated remote attacker to exhaust server memory by sending a specially crafted PNG image.</p>
+<p>The issue originates in how Sliver processes PNG images received through its HTTP(S) listener. The image decoder can consume substantially more memory than the size of the original file suggests. By crafting an image with carefully selected dimensions, an attacker can cause the decoder to allocate an extremely large amount of memory during processing.</p>
+<p>The interesting part was that the image did not need to be particularly large on disk. The amount of memory required to process it was significantly greater than its compressed size.</p>
+<p>The vulnerability was assigned <b>CVE-2026-77622</b> and affects Sliver 1.7.3. It was also published under GitHub Security Advisory GHSA-663m-7x7m-g4fw.</p>
+<table>
+<tbody>
+<tr><th scope="row">Project</th><td>Sliver</td></tr>
+<tr><th scope="row">Vulnerability</th><td>Unauthenticated memory exhaustion through PNG processing</td></tr>
+<tr><th scope="row">CVE</th><td>CVE-2026-77622</td></tr>
+<tr><th scope="row">Affected version</th><td>1.7.3</td></tr>
+<tr><th scope="row">Weakness</th><td>CWE-400, Uncontrolled Resource Consumption</td></tr>
+<tr><th scope="row">Attack vector</th><td>Network</td></tr>
+<tr><th scope="row">Authentication</th><td>Not required</td></tr>
+<tr><th scope="row">Impact</th><td>Denial of service</td></tr>
+<tr><th scope="row">Advisory</th><td>GHSA-663m-7x7m-g4fw</td></tr>
+<tr><th scope="row">Research</th><td>Independent vulnerability research</td></tr>
+</tbody>
+</table>
+
+<h2>Finding the Issue</h2>
+<p>I began investigating the HTTP(S) listener and how it handled incoming requests. One area that caught my attention was image processing.</p>
+<p>PNG files are compressed, meaning the amount of data required to represent an image on disk can be considerably smaller than the memory required to decode it. This is normal behavior, but it becomes a security concern when an application processes attacker-controlled images without adequately restricting their dimensions or decoded size.</p>
+<p>The important distinction is between the size of the uploaded file and the amount of memory needed to process it.</p>
+<p>An image with dimensions of 32,767 &times; 32,767 pixels can require approximately 4 GiB of memory when represented as an RGBA image:</p>
+<div class="equation">32,767 &times; 32,767 &times; 4 &approx; 4.29 GB</div>
+<p>That is a substantial allocation for an image that may have a much smaller compressed representation.</p>
+<p>The listener did not adequately constrain the dimensions or resulting memory consumption before processing the image. This created an opportunity for an attacker to send an image that would cause excessive resource consumption during decoding.</p>
+
+<h2>The PNG Decoder</h2>
+<p>The underlying problem was not simply that PNG files were accepted. Image processing is an expected part of the listener's behavior.</p>
+<p>The issue was the lack of sufficient resource limits around that processing.</p>
+<p>A compressed image can expand significantly after decompression. Consequently, validating only the size of the incoming request does not necessarily protect an application from memory exhaustion.</p>
+<p>The same principle applies to image dimensions. A relatively small compressed file can describe an image with an enormous pixel count.</p>
+<p>In this case, the attacker could supply an image that caused the decoder to allocate an excessive amount of memory. Because the processing occurred through the HTTP(S) listener, this was not limited to someone with local access to the Sliver server.</p>
+
+<h2>Reaching the Vulnerable Functionality</h2>
+<p>An important part of the investigation was determining whether the image-processing functionality could actually be reached by an unauthenticated client.</p>
+<p>The HTTP(S) listener exposed the relevant request-handling path, and the image could be supplied without first establishing an authenticated Sliver session.</p>
+<p>That distinction matters. A memory exhaustion issue in an internal function is not necessarily a remotely exploitable vulnerability. The attacker must be able to reach the vulnerable functionality through an exposed interface.</p>
+<p>I verified that an unauthenticated request could reach the image-processing path and trigger the excessive memory consumption.</p>
+<p>This established the network attack surface and removed the need for valid Sliver credentials.</p>
+
+<h2>The Nonce and Request Handling</h2>
+<p>There was another interesting part of the investigation: reaching the relevant request-handling path involved a nonce.</p>
+<p>The listener's behavior meant that the request could not simply be treated as an arbitrary image upload. I needed to understand how the nonce affected request processing and whether its possible values created a practical obstacle.</p>
+<p>The nonce had 65,537 possible values, so I investigated whether it could be recovered or reached through the request-handling behavior.</p>
+<p>This was important because identifying an expensive decoding operation is only part of vulnerability research. The complete attack path must also be practical from the attacker's position.</p>
+<p>I was able to establish that the nonce did not prevent the unauthenticated attack from being exercised.</p>
+
+<h2>Demonstrating the Impact</h2>
+<p>The final step was validating that the crafted image caused the expected resource consumption in the listener.</p>
+<p>The image could be processed without an authenticated session, and the resulting memory consumption was sufficient to exhaust the available resources and cause denial of service.</p>
+<p>This is particularly relevant for Sliver because the affected component is part of its HTTP(S) listener. An attacker who can reach the listener can target the service without first obtaining an authenticated session.</p>
+<p>The impact is availability. This finding does not demonstrate arbitrary code execution, credential disclosure, or control over the Sliver server.</p>
+
+<h2>Root Cause and Remediation</h2>
+<p>The root cause was insufficient resource management when processing attacker-controlled PNG images.</p>
+<p>Image dimensions and decoded memory requirements need to be constrained before expensive decoding operations take place. Limiting only the compressed request size is insufficient because the decoded representation can be orders of magnitude larger.</p>
+<p>Appropriate protections include:</p>
+<ul>
+<li>Enforcing maximum image dimensions.</li>
+<li>Limiting the maximum decoded image size.</li>
+<li>Rejecting images that exceed resource limits before expensive processing.</li>
+<li>Applying appropriate request and processing limits to the HTTP(S) listener.</li>
+</ul>
+<p>These controls help prevent an attacker from using a small compressed image to trigger disproportionately large memory allocations.</p>
+
+<h2>Disclosure</h2>
+<p>I reported the vulnerability to the Sliver project. The issue was acknowledged and addressed through the project's security process.</p>
+<p>The vulnerability was assigned <b>CVE-2026-77622</b> and published as GHSA-663m-7x7m-g4fw. I also worked with another researcher who independently confirmed the behavior.</p>
+<ul>
+<li><a href="https://github.com/BishopFox/sliver/security/advisories/GHSA-663m-7x7m-g4fw" target="_blank" rel="noopener">GitHub Security Advisory &ndash; GHSA-663m-7x7m-g4fw</a></li>
+<li><a href="https://github.com/Squ1shification/PNGboomer" target="_blank" rel="noopener">PNGboomer &ndash; Proof of Concept and Technical Write-up</a></li>
+</ul>
+
+<h2>Final Thoughts</h2>
+<p>This finding was a good example of why security reviews should look beyond the obvious behavior of an application.</p>
+<p>The listener was performing an ordinary operation: processing an image. The vulnerability came from the assumptions made about the resource requirements of that operation and the absence of sufficient restrictions on attacker-controlled input.</p>
+<p>A file's size does not necessarily represent the resources required to process it. That distinction is easy to overlook, particularly when reviewing functionality that appears harmless at first.</p>
+<p>For me, the most important part of this research was tracing the issue from the HTTP listener to the image decoder, then establishing that the vulnerable functionality could be reached without authentication.</p>
+
+<a class="backlink" href="blog.html">&larr; Back to all posts</a>
+</div>
+</div>
+</div>
+</body></html>

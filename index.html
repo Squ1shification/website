@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head> <title>Wencheng Xue</title> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <link rel="stylesheet" type="text/css" href="xuewe.css"> <link rel="stylesheet" type="text/css" href="content.css"> <meta property="og:title" content="Wencheng Xue"> <meta property="og:type" content="article"> <meta property="og:description" content="Wencheng Xue — cybersecurity student interested in red team operations."> <meta property="og:locale" content="en_US"> <meta property="og:site_name" content="Wencheng Xue"> <meta property="og:image" content="assets/wencheng-xue.png"> <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> </head>
+
+<body>
+<div class="topmenu">
+<a class="topmenu" href="index.html">about</a>
+<a class="topmenu" href="blog.html">blog</a>
+<a class="topmenu" href="contact.html">contact</a>
+<a class="topmenu" href="documentation.html">documentation</a>
+<a class="topmenu" href="experience.html">experience</a>
+</div>
+<div class="main">
+<style>
+.about-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 40px;
+}
+.portrait-wrap {
+    flex: 0 0 auto;
+    position: relative;
+    width: 38%;
+    max-width: 400px;
+    aspect-ratio: 1 / 1;
+    align-self: flex-start;
+    border: 2px solid #b35a5a;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.portrait {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    display: block;
+}
+.pagehead {
+    font-family: Georgia, 'Palatino Linotype', 'Book Antiqua', serif;
+    font-weight: bold;
+    color: #ffffff;
+    letter-spacing: 1px;
+    font-size: 300%;
+    line-height: 1.1;
+    margin: 8px 0px 14px;
+}
+.panel {
+    border: 1px solid #b35a5a;
+    border-radius: 6px;
+    padding: 16px 18px;
+    margin-bottom: 8px;
+}
+.panel-cert {
+    padding-top: 40px;
+    padding-bottom: 40px;
+}
+.bio {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 1.02em;
+    line-height: 1.4;
+    text-align: justify;
+    hyphens: auto;
+}
+.bio p {
+    margin: 0 0 0.5em;
+}
+.prolabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    justify-content: center;
+}
+.prolab {
+    margin: 0;
+    flex: 1 1 460px;
+    max-width: 560px;
+}
+.prolab img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid #b35a5a;
+    border-radius: 4px;
+}
+.prolab figcaption {
+    text-align: center;
+    margin-top: 10px;
+    font-family: Arial, 'Helvetica Neue', 'Segoe UI', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #c98a8a;
+}
+.bio p:last-child {
+    margin-bottom: 0;
+}
+.bio b {
+    color: #b35a5a;
+}
+
+.bio .subtitle {
+    overflow: hidden;
+}
+.bio ul {
+    margin-top: 0;
+    padding-left: 1.4em;
+}
+.bio li {
+    margin-bottom: 6px;
+}
+.bio code {
+    font-family: "Courier New", monospace;
+    font-size: 90%;
+    color: #d98a8a;
+}
+.content {
+    padding-top: 22px;
+    padding-bottom: 200px;
+}
+.marquee {
+    clear: both;
+    overflow: hidden;
+    width: 100%;
+    margin-top: 12px;
+    padding: 6px 0;
+    mask-image: linear-gradient(to right, transparent 0, #000 7%, #000 93%, transparent 100%);
+}
+.marquee-track {
+    display: flex;
+    align-items: center;
+    width: max-content;
+    animation: marquee-scroll 38s linear infinite;
+}
+@media (hover: hover) {
+    .marquee:hover .marquee-track {
+        animation-play-state: paused;
+    }
+}
+@keyframes marquee-scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+}
+.cbadge {
+    height: 150px;
+    width: 150px;
+    object-fit: contain;
+    flex: 0 0 auto;
+    margin-right: 50px;
+    display: block;
+}
+@media screen and (max-width: 480px) {
+    .cbadge {
+        height: 110px;
+        margin-right: 34px;
+    }
+    .about-row {
+        flex-direction: column;
+        gap: 18px;
+    }
+    .portrait-wrap {
+        width: 70%;
+        max-width: 240px;
+        aspect-ratio: 1 / 1;
+        align-self: center;
+    }
+}
+@media (prefers-color-scheme: dark) {
+}
+</style>
+<div class="content">
+<div class="pagehead">Wencheng Xue</div>
+<div class="panel">
+<div class="about-row">
+<div class="bio">
+<p> I&rsquo;m a Cybersecurity student at the University of Cincinnati focused on offensive security, vulnerability research, and red team operations. My work centers on source code analysis, reverse engineering, exploit development, and identifying vulnerabilities in widely used software.
+
+<p> My independent research has resulted in credited security advisories, bug bounty rewards, and CVE assignments, including a published CVE affecting Sliver and <b>CAN-2026-2037511</b>, a zero-day in OpenSMTPD enabling unauthenticated remote code execution, currently pending CVE assignment.
+
+<p> Alongside vulnerability research, I develop and practice offensive security techniques through hands-on labs, red team exercises, and competitions such as the National Cyber League.
+
+<p> At 17, I earned the <b>OSCE3 certification</b>, becoming its youngest holder at the time after passing the OSEP, OSED, and OSWE examinations.
+</div>
+<div class="portrait-wrap"><img class="portrait" src="assets/wencheng-xue.png" alt="Wencheng Xue"></div>
+</div>
+</div>
+
+<div class="pagehead" style="clear: both; margin-top: 40px; font-size: 230%;">Certifications</div>
+<div class="panel panel-cert">
+<div class="marquee">
+<div class="marquee-track">
+<img class="cbadge" src="assets/badges/cert-osce3.png" alt="OSCE3" title="OSCE3">
+<img class="cbadge" src="assets/badges/cert-osep.png" alt="OSEP" title="OSEP">
+<img class="cbadge" src="assets/badges/cert-osed.png" alt="OSED" title="OSED">
+<img class="cbadge" src="assets/badges/cert-oswe.png" alt="OSWE" title="OSWE">
+<img class="cbadge" src="assets/badges/crto_icon.png" alt="CRTO" title="CRTO">
+<img class="cbadge" src="assets/badges/crtl_icon.png" alt="CRTL" title="CRTL">
+<img class="cbadge" src="assets/badges/cape_icon.png" alt="CAPE" title="CAPE">
+<img class="cbadge" src="assets/badges/cert-pentest-trim.png" alt="CompTIA PenTest+" title="CompTIA PenTest+">
+<img class="cbadge" src="assets/badges/ethical-hacker-pro.webp" alt="Ethical Hacker Pro" title="Ethical Hacker Pro">
+<img class="cbadge" src="assets/badges/hybrid-server-pro.webp" alt="Hybrid Server Pro" title="Hybrid Server Pro">
+<img class="cbadge" src="assets/badges/ejpt.png" alt="eJPT" title="eJPT">
+<img class="cbadge" src="assets/badges/icca.png" alt="ICCA" title="ICCA">
+<img class="cbadge" src="assets/badges/cert-osce3.png" alt="" aria-hidden="true">
+<img class="cbadge" src="assets/badges/cert-osep.png" alt="" aria-hidden="true">
+<img class="cbadge" src="assets/badges/cert-osed.png" alt="" aria-hidden="true">
+<img class="cbadge" src="assets/badges/cert-oswe.png" alt="" aria-hidden="true">
+<img class="cbadge" src="assets/badges/crto_icon.png" alt="" aria-hidden="true">
+<img class="cbadge" src="assets/badges/crtl_icon.png" alt="" aria-hidden="true">
+<img class="cbadge" src="assets/badges/cape_icon.png" alt="" aria-hidden="true">
+<img class="cbadge" src="assets/badges/cert-pentest-trim.png" alt="" aria-hidden="true">
+<img class="cbadge" src="assets/badges/ethical-hacker-pro.webp" alt="" aria-hidden="true">
+<img class="cbadge" src="assets/badges/hybrid-server-pro.webp" alt="" aria-hidden="true">
+<img class="cbadge" src="assets/badges/ejpt.png" alt="" aria-hidden="true">
+<img class="cbadge" src="assets/badges/icca.png" alt="" aria-hidden="true">
+</div>
+</div>
+</div>
+
+<div class="pagehead" style="clear: both; margin-top: 40px; font-size: 230%;">Cyber Ranges</div>
+<div class="panel">
+<div class="prolabs">
+<figure class="prolab">
+<img src="assets/prolabs/aptlabs.jpg" alt="Hack The Box Pro Labs: APTLabs certificate of completion">
+<figcaption>APTLabs</figcaption>
+</figure>
+<figure class="prolab">
+<img src="assets/prolabs/cybernetics.jpg" alt="Hack The Box Pro Labs: Cybernetics certificate of completion">
+<figcaption>Cybernetics</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</body></html>

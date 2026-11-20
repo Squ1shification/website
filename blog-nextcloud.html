@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head> <title>Nextcloud: How a SubAdmin Could Take Over a DelegatedAdmin Account - Wencheng Xue</title> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <link rel="stylesheet" type="text/css" href="xuewe.css"> <link rel="stylesheet" type="text/css" href="content.css">  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> </head>
+
+<body>
+<div class="topmenu">
+<a class="topmenu" href="index.html">about</a>
+<a class="topmenu" href="blog.html">blog</a>
+<a class="topmenu" href="contact.html">contact</a>
+<a class="topmenu" href="documentation.html">documentation</a>
+<a class="topmenu" href="experience.html">experience</a>
+</div>
+<div class="main">
+<style>
+.content {
+    padding-top: 22px;
+    padding-bottom: 160px;
+    max-width: 680px;
+    margin-left: auto;
+    margin-right: auto;
+    font-family: 'Times New Roman', Times, serif;
+}
+.article {
+    max-width: 680px;
+}
+.post-title {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 700;
+    color: #ffffff;
+    font-size: 40px;
+    line-height: 1.08;
+    letter-spacing: -0.5px;
+    margin: 0 0 14px;
+}
+.article p {
+    font-size: 18px;
+    line-height: 1.4;
+    margin: 0 0 8px;
+    text-align: left;
+    color: #e4e4e4;
+}
+.article h2 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 700;
+    font-size: 21px;
+    color: #ffffff;
+    margin: 18px 0 6px;
+}
+.article h3 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-style: italic;
+    font-weight: 700;
+    font-size: 18px;
+    color: #e9b4b4;
+    margin: 16px 0 4px;
+}
+.article ol,
+.article ul {
+    margin: 8px 0 14px;
+    padding-left: 1.4em;
+}
+.article li {
+    font-size: 18px;
+    line-height: 1.45;
+    margin-bottom: 6px;
+    color: #e4e4e4;
+}
+.article b { color: #e9b4b4; }
+.article a:not(.backlink) {
+    color: #e9b4b4;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+.article a:not(.backlink):hover {
+    color: #ffffff;
+}
+.article code {
+    font-family: Consolas, 'DejaVu Sans Mono', Menlo, Monaco, monospace;
+    font-size: 90%;
+    color: #d98a8a;
+    overflow-wrap: break-word;
+}
+.article pre {
+    background: #161616;
+    border: 1px solid #2d2d2d;
+    border-radius: 6px;
+    padding: 12px 15px;
+    overflow-x: auto;
+    margin: 7px 0 12px;
+    line-height: 1.1;
+}
+.article pre code {
+    font-family: Consolas, 'DejaVu Sans Mono', Menlo, Monaco, monospace;
+    font-size: 12.5px;
+    line-height: 1.1;
+    color: #dcdcdc;
+    white-space: pre;
+    display: block;
+}
+.code-wrap {
+    position: relative;
+}
+.copy-btn {
+    position: absolute;
+    top: 7px;
+    right: 7px;
+    padding: 4px 9px;
+    font-family: Arial, 'Helvetica Neue', 'Segoe UI', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #cfcfcf;
+    background: #262626;
+    border: 1px solid #3d3d3d;
+    border-radius: 5px;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.12s ease, background 0.12s ease, color 0.12s ease;
+}
+.code-wrap:hover .copy-btn { opacity: 1; }
+.copy-btn:hover { background: #b35a5a; color: #ffffff; border-color: #b35a5a; }
+.copy-btn.copied { background: #2e7d46; color: #ffffff; border-color: #2e7d46; opacity: 1; }
+.article figure {
+    margin: 14px 0;
+}
+.article figure img {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #3a2626;
+    border-radius: 6px;
+    display: block;
+}
+.article figcaption {
+    font-size: 13px;
+    color: #9a9a9a;
+    margin-top: 8px;
+}
+.backlink {
+    display: inline-block;
+    margin-top: 36px;
+    padding: 10px 20px;
+    background: #b35a5a;
+    color: #ffffff;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 15px;
+    border-radius: 4px;
+}
+.backlink:hover { background: #c96d6d; color: #ffffff; }
+@media screen and (max-width: 600px) {
+    .post-title { font-size: 30px; }
+}
+</style>
+<div class="content">
+<div class="article">
+<div class="post-title">Nextcloud: How a SubAdmin Could Take Over a DelegatedAdmin Account</div>
+
+<h2>Introduction</h2>
+<p>While reviewing Nextcloud's user-management functionality, I found an authorization issue that allowed a group-level SubAdmin to take over a DelegatedAdmin account, gaining the broader user-management privileges associated with that account.</p>
+<p>The issue came down to a missing role check in <code>SubAdmin::isUserAccessible()</code>. The method prevented SubAdmins from managing full administrators, but it did not apply the same restriction to DelegatedAdmins. Because a DelegatedAdmin can manage users across the instance, this created a path from limited group-level access to instance-wide user management.</p>
+<p>I reported the vulnerability through HackerOne as report <b>#3681400</b>. Nextcloud resolved the report and addressed the missing authorization check.</p>
+
+<h2>Understanding the Roles</h2>
+<p>The first step in understanding the issue is looking at how Nextcloud separates its administrative roles.</p>
+<p>A <b>SubAdmin</b> is a group administrator. Their permissions are limited to the users belonging to the groups they manage. They are not supposed to have unrestricted control over the rest of the instance.</p>
+<p>A <b>DelegatedAdmin</b>, on the other hand, has broader user-management permissions. Unlike a SubAdmin, a DelegatedAdmin can manage users across the instance.</p>
+<p>These roles have different levels of authority, and Nextcloud needs to preserve that distinction when deciding whether one administrator can manage another account.</p>
+<p>The important detail is that a SubAdmin can manage users within their assigned groups. If a DelegatedAdmin account belongs to one of those groups, the SubAdmin can encounter that account through otherwise legitimate group-management functionality.</p>
+<p>That is where the authorization check becomes important.</p>
+
+<h2>Finding the Authorization Issue</h2>
+<p>I traced the restriction to <code>SubAdmin::isUserAccessible()</code>, which determines whether a SubAdmin is allowed to access and manage a particular user.</p>
+<p>The method already accounted for full administrators. It checked whether the target user was an administrator and prevented the SubAdmin from managing that account.</p>
+<p>However, the same protection was not applied to DelegatedAdmins.</p>
+<p>The method effectively treated the full administrator role as the boundary that needed to be protected, without accounting for another role that also carried elevated privileges.</p>
+<p>That distinction mattered because a DelegatedAdmin is not necessarily a full administrator. A check that excludes full administrators does not automatically exclude delegated administrators.</p>
+<p>In other words, the application was enforcing the restriction for one privileged role while overlooking another.</p>
+
+<h2>Why the Missing Check Mattered</h2>
+<p>The vulnerability was not simply that a SubAdmin could see a DelegatedAdmin account. The more important question was what the SubAdmin could do once the account was considered accessible.</p>
+<p>Nextcloud's OCS Provisioning API provides functionality for managing user accounts, including changing account information and resetting passwords. Those operations rely on the application's authorization checks to determine whether the authenticated user has permission to modify the target account.</p>
+<p>Because the SubAdmin authorization logic did not reject DelegatedAdmin accounts, a SubAdmin who shared a group with a DelegatedAdmin could reach a password-management operation that should have been denied.</p>
+<p>This created a privilege-escalation path:</p>
+<ol>
+<li>A SubAdmin manages a group containing a DelegatedAdmin account.</li>
+<li>The SubAdmin targets that DelegatedAdmin through the user-management functionality.</li>
+<li>The application evaluates whether the target account is accessible.</li>
+<li><code>SubAdmin::isUserAccessible()</code> rejects full administrators but does not reject DelegatedAdmins.</li>
+<li>The OCS password-reset operation succeeds instead of being denied.</li>
+<li>The SubAdmin can authenticate as the DelegatedAdmin and inherit its broader user-management privileges.</li>
+</ol>
+<p>The result is a transition from group-scoped administration to instance-wide user management.</p>
+
+<h2>Reproducing the Issue</h2>
+<p>To validate the finding, I used two accounts with different administrative roles:</p>
+<ul>
+<li>A SubAdmin assigned to a particular group.</li>
+<li>A DelegatedAdmin account that was also a member of that group.</li>
+</ul>
+<p>The expected behavior was straightforward: even though the SubAdmin could manage ordinary users in the shared group, they should not be able to reset the password of an account with DelegatedAdmin privileges.</p>
+<p>I tested this through the OCS Provisioning API.</p>
+<p>The request was expected to return <b>403 Forbidden</b>, since the authenticated SubAdmin should not have permission to modify the DelegatedAdmin account. Instead, the operation returned <b>200 OK</b> and the password change was accepted.</p>
+<p>That response confirmed that the authorization check was allowing an operation that should have been restricted.</p>
+<p>After resetting the DelegatedAdmin's password, I authenticated using that account. This demonstrated the practical impact of the issue: the SubAdmin was no longer limited to the group-level permissions of their original account and could use the DelegatedAdmin's broader user-management authority.</p>
+<p>The important part of this test was the role transition. The original account had limited administrative scope; the account obtained through the password reset had instance-wide user-management privileges.</p>
+
+<h2>Root Cause</h2>
+<p>The root cause was an incomplete authorization check in <code>SubAdmin::isUserAccessible()</code>.</p>
+<p>The method already contained logic to prevent a SubAdmin from managing a full administrator. However, it did not also check whether the target user was a DelegatedAdmin.</p>
+<p>That omission meant the application did not consistently protect accounts with elevated administrative privileges.</p>
+<p>The relevant distinction is between checking whether a user is a full administrator and checking whether a user holds any role that a SubAdmin must not be allowed to manage. Those are not equivalent checks.</p>
+<p>A SubAdmin's access should remain limited to ordinary users within the groups they administer. A DelegatedAdmin should not become manageable simply because the account is not classified as a full administrator.</p>
+
+<h2>Remediation</h2>
+<p>The fix was to extend the authorization check so that DelegatedAdmin accounts were also excluded.</p>
+<p>The method needed to reject both full administrators and DelegatedAdmins when evaluating whether a SubAdmin could access a target account.</p>
+<p>Conceptually, the missing condition was:</p>
+<pre><code>if (
+    $this-&gt;groupManager-&gt;isAdmin($user) ||
+    $this-&gt;groupManager-&gt;isDelegatedAdmin($user)
+) {
+    return false;
+}</code></pre>
+<p>The important change is not the addition of another arbitrary restriction. It is ensuring that the same authorization boundary applies to every administrative role that must be protected from group-level administrators.</p>
+<p>This prevents a SubAdmin from using shared group membership to reach the password-management functionality of a DelegatedAdmin account.</p>
+
+<h2>Disclosure</h2>
+<p>I reported the issue to Nextcloud through HackerOne as report <b>#3681400</b>. The report was resolved, and the authorization check was updated to account for DelegatedAdmin accounts.</p>
+<figure>
+<img src="assets/blog/nextcloud.png" alt="HackerOne report for the Nextcloud DelegatedAdmin privilege escalation, marked Resolved (Closed)">
+<figcaption>HackerOne Report: Nextcloud &ndash; Report #3681400. The report image has been edited to redact the reporter handle and account avatars.</figcaption>
+</figure>
+
+<h2>Final Thoughts</h2>
+<p>What made this issue interesting was how small the underlying mistake was compared with the privilege escalation it enabled.</p>
+<p>The application already had a check intended to prevent SubAdmins from managing privileged accounts. The problem was that the check only considered one administrative role. Because DelegatedAdmins were not included, an account with broader user-management privileges could still be reached through a group-level administrator's normal management workflow.</p>
+<p>This is a good example of why authorization logic needs to account for the full role hierarchy, rather than relying on a single administrator check. When an application has several administrative roles with different scopes, every operation that changes an account should enforce those boundaries consistently.</p>
+<p>A user being accessible within a group does not necessarily mean that the user should be manageable. That distinction was what this vulnerability failed to enforce.</p>
+
+<a class="backlink" href="blog.html">&larr; Back to all posts</a>
+</div>
+</div>
+</div>
+<script>
+(function () {
+    function fallbackCopy(text, cb) {
+        var ta = document.createElement('textarea');
+        ta.value = text; ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed'; ta.style.top = '-1000px'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); } catch (e) {}
+        document.body.removeChild(ta); cb();
+    }
+    var pres = document.querySelectorAll('.article pre');
+    for (var i = 0; i < pres.length; i++) {
+        (function (pre) {
+            var code = pre.querySelector('code');
+            if (!code) return;
+            var wrap = document.createElement('div');
+            wrap.className = 'code-wrap';
+            pre.parentNode.insertBefore(wrap, pre);
+            wrap.appendChild(pre);
+            var btn = document.createElement('button');
+            btn.type = 'button'; btn.className = 'copy-btn'; btn.textContent = 'Copy';
+            btn.addEventListener('click', function () {
+                var text = code.textContent;
+                function done() {
+                    btn.textContent = 'Copied'; btn.classList.add('copied');
+                    setTimeout(function () { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1400);
+                }
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text, done); });
+                } else { fallbackCopy(text, done); }
+            });
+            wrap.appendChild(btn);
+        })(pres[i]);
+    }
+})();
+</script>
+</body></html>

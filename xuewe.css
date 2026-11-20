@@ -1,0 +1,53 @@
+body {
+  margin: 0;
+  background-color: #000000;
+  color: #ffffff;
+  font-family: Georgia, 'Palatino Linotype', 'Book Antiqua', serif;
+  font-size: 16pt;
+  line-height: 1.55;
+}
+
+a {
+  text-decoration: none;
+  color: #8080f0;
+}
+
+a:hover {
+  color: #6060c0;
+}
+
+div.topmenu {
+  background-color: #b35a5a;
+  color: #ffffff;
+  font-family: Georgia, 'Palatino Linotype', 'Book Antiqua', serif;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+  font-size: 150%;
+  line-height: 1.1;
+  text-align: center;
+  padding: 0 22px;
+}
+
+a.topmenu {
+  display: inline-block;
+  padding-left: 8px;
+  padding-right: 8px;
+  color: #ffffff;
+  font-size: 0.95em;
+  border-radius: 3px;
+  transition: background-color 0.15s ease;
+}
+
+a.topmenu::first-letter {
+  font-size: 1.0526em;
+}
+
+a.topmenu:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.22);
+}
+
+div.main {
+  margin: 4px;
+}

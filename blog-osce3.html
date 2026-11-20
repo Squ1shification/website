@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head> <title>OffSec Certified Expert (OSCE3): My Experience at 17 - Wencheng Xue</title> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <link rel="stylesheet" type="text/css" href="xuewe.css"> <link rel="stylesheet" type="text/css" href="content.css">  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> </head>
+
+<body>
+<div class="topmenu">
+<a class="topmenu" href="index.html">about</a>
+<a class="topmenu" href="blog.html">blog</a>
+<a class="topmenu" href="contact.html">contact</a>
+<a class="topmenu" href="documentation.html">documentation</a>
+<a class="topmenu" href="experience.html">experience</a>
+</div>
+<div class="main">
+<style>
+.content {
+    padding-top: 22px;
+    padding-bottom: 160px;
+    max-width: 680px;
+    margin-left: auto;
+    margin-right: auto;
+    font-family: 'Times New Roman', Times, serif;
+}
+.article {
+    max-width: 680px;
+}
+.post-title {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 700;
+    color: #ffffff;
+    font-size: 40px;
+    line-height: 1.08;
+    letter-spacing: -0.5px;
+    margin: 0 0 14px;
+}
+.article p {
+    font-size: 18px;
+    line-height: 1.4;
+    margin: 0 0 8px;
+    text-align: left;
+    color: #e4e4e4;
+}
+.article h2 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 700;
+    font-size: 21px;
+    color: #ffffff;
+    margin: 18px 0 6px;
+}
+.article h3 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-style: italic;
+    font-weight: 700;
+    font-size: 18px;
+    color: #e9b4b4;
+    margin: 16px 0 4px;
+}
+.article ul {
+    margin: 8px 0 14px;
+    padding-left: 1.3em;
+}
+.article li {
+    font-size: 18px;
+    line-height: 1.45;
+    margin-bottom: 6px;
+    color: #e4e4e4;
+}
+.article table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 18px;
+    font-size: 17px;
+}
+.article th,
+.article td {
+    border: 1px solid #4a3030;
+    padding: 9px 13px;
+    text-align: left;
+    color: #eaeaea;
+    vertical-align: top;
+}
+.article th {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 700;
+    color: #ffffff;
+    background: #2a1818;
+}
+.article td.num,
+.article th.num {
+    text-align: right;
+    white-space: nowrap;
+}
+.article b { color: #e9b4b4; }
+.article a:not(.backlink) {
+    color: #e9b4b4;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+.article a:not(.backlink):hover {
+    color: #ffffff;
+}
+.backlink {
+    display: inline-block;
+    margin-top: 36px;
+    padding: 10px 20px;
+    background: #b35a5a;
+    color: #ffffff;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 15px;
+    border-radius: 4px;
+}
+.backlink:hover { background: #c96d6d; color: #ffffff; }
+@media screen and (max-width: 600px) {
+    .post-title { font-size: 30px; }
+    .article p,
+    .article li { text-align: left; }
+}
+</style>
+<div class="content">
+<div class="article">
+<div class="post-title">OffSec Certified Expert (OSCE3): My Experience at 17</div>
+
+<h2>Introduction</h2>
+<p>I earned the OSCE3 at 17 after completing three OffSec certifications: OSEP, OSED, and OSWE. Each exam focuses on a different area of offensive security, covering enterprise penetration testing, Windows exploit development, and white-box web application assessment.</p>
+<p>Before pursuing the certifications, most of my experience came from CTF competitions and independent security research. I was particularly interested in binary exploitation and reverse engineering. I spent a considerable amount of time working with debuggers, reading assembly, analyzing program behavior, and investigating memory corruption vulnerabilities.</p>
+<p>That background gave me a fairly strong foundation for OSED, but I had considerably less experience with enterprise environments and web application security. I wanted to develop those areas rather than continue concentrating exclusively on what I already knew.</p>
+<p>The three exams also turned out to be quite different experiences. I completed OSEP in approximately 8 hours, OSED in 22 hours, and OSWE in 12 hours. Although the available exam time was considerably longer, I did not need to use the entire window to complete the assessments.</p>
+
+<h2>OffSec Experienced Penetration Tester</h2>
+<p>OSEP was the first of the three certifications I pursued. The course, PEN-300, focuses on advanced penetration testing, with particular attention to Active Directory, lateral movement, defense evasion, and client-side attacks.</p>
+<p>What makes OSEP different from a traditional machine-based penetration test is the emphasis on working through an enterprise environment. Obtaining an initial foothold is only one part of the assessment. You need to understand the network, identify relationships between systems, establish access, and determine how to move further through the environment.</p>
+<p>A significant part of the material involves understanding how security products affect an attack. It is not enough to develop a payload that executes successfully when defenses are disabled. You need to understand how endpoint protection, application restrictions, and other security controls affect execution, and how to adapt your techniques accordingly.</p>
+<p>Active Directory is another major component. Understanding domain relationships, authentication, delegation, permissions, and the different ways access can be obtained or extended is essential. PowerShell and C# are particularly useful throughout the course, especially when developing or modifying tooling for post-exploitation and defense evasion.</p>
+
+<h3>The Exam</h3>
+<p>I started my OSEP exam at <b>3:00 PM and finished at approximately 11:00 PM</b>, taking around 8 hours.</p>
+<p>The assessment was centered on the same broad skills covered throughout PEN-300: gaining access to an environment, working through internal systems, and applying the techniques necessary to progress through a network. The important distinction is that these activities are connected. A foothold is useful because of what it allows you to do next, not simply because you have obtained a shell.</p>
+<p>My approach was to spend time understanding the information available to me before committing to an attack path. Enumeration was particularly important. I kept track of discovered services, credentials, relationships, and potential opportunities for lateral movement. Having that information organized made it easier to revisit earlier findings when I reached a dead end.</p>
+<p>I also found that understanding the underlying techniques was more useful than relying on prepared commands. When a particular approach did not work, I needed to understand why and determine what I could change.</p>
+<p>OSEP was a good introduction to thinking beyond individual vulnerabilities. It made me consider how an attacker could use multiple weaknesses, credentials, and systems to achieve a larger objective.</p>
+
+<h2>OffSec Exploit Developer</h2>
+<p>OSED was probably the most familiar certification for me because of my previous experience with binary exploitation and reverse engineering.</p>
+<p>The course, EXP-301, focuses on Windows user-mode exploit development. It covers topics such as stack-based buffer overflows, Structured Exception Handler exploitation, shellcode development, exploit mitigations, and bypassing protections such as DEP and ASLR.</p>
+<p>Unlike a traditional penetration test, the work here is much closer to understanding the behavior of an individual program at a very low level. You need to identify how an application can be made to behave unexpectedly, determine what control you have over execution, and develop an exploit that reliably takes advantage of that behavior.</p>
+<p>A considerable amount of the work involves debugging and reverse engineering. Understanding registers, stack layouts, memory addresses, calling conventions, and instruction execution is essential. You also need to be comfortable reading assembly and understanding how the operating system's protections affect the exploitation process.</p>
+
+<h3>The Exam</h3>
+<p>I started my OSED exam at <b>1:00 PM and finished at approximately 11:00 AM the following day</b>. The entire process took around 22 hours, making it the longest of my three exams.</p>
+<p>This was also the exam where my previous experience helped the most. I was already comfortable working with debuggers, examining assembly, and investigating memory corruption vulnerabilities. As a result, I was not learning the fundamentals of binary exploitation from scratch.</p>
+<p>However, familiarity with the subject does not eliminate the amount of work involved. Exploit development requires precision. Identifying a vulnerability is only the beginning; you still need to understand the relevant memory layout, determine how execution can be controlled, account for exploit mitigations, and develop a working solution.</p>
+<p>I spent much of my time examining program behavior and verifying that each part of the exploit worked as intended. Debugging was an important part of that process. When something failed, I needed to understand exactly where execution differed from what I expected.</p>
+<p>The 22-hour duration was largely a reflection of the amount of technical work involved. Compared with the other two exams, OSED required the most time spent working directly with program internals.</p>
+<p>I particularly enjoyed this exam because it aligned closely with the areas I was already interested in. It also reinforced the importance of understanding the underlying mechanics of an exploit rather than treating exploitation as a sequence of commands.</p>
+
+<h2>OffSec Web Expert</h2>
+<p>OSWE was the most challenging certification for me, primarily because web application security was my weakest area before starting the course.</p>
+<p>The course, WEB-300, focuses on advanced web application exploitation and white-box security assessment. Unlike traditional black-box testing, you are provided with application source code and expected to identify vulnerabilities by understanding how the application works internally.</p>
+<p>This requires a different approach to security testing. You are not simply interacting with an application and observing its responses. You need to understand how requests are processed, where user-controlled data enters the application, how authentication and authorization are implemented, and which operations can be reached by an attacker.</p>
+<p>Source code review is at the center of the course. You need to become comfortable navigating unfamiliar codebases, understanding different frameworks, and tracing data through multiple components.</p>
+<p>One of the more important distinctions is between finding a potentially dangerous function and demonstrating an actual vulnerability. A function might appear unsafe, but that does not necessarily mean an attacker can reach it with controllable input. Understanding the surrounding code and the application's security assumptions is what allows you to determine whether a weakness is exploitable.</p>
+
+<h3>The Exam</h3>
+<p>I started my OSWE exam at <b>3:00 AM and finished at approximately 3:00 PM</b>, completing it in around 12 hours.</p>
+<p>Going into the exam, I was less comfortable with web application security than I was with the subjects covered by OSEP and OSED. I therefore had to rely more heavily on the preparation I had done with source code review and understanding unfamiliar applications.</p>
+<p>The assessment requires manual analysis of application source code, identification of vulnerabilities, and development of working exploits. It is not enough to identify a weakness or demonstrate that a particular request produces an unexpected response. You need to understand the vulnerability and develop a reliable way to exploit it.</p>
+<p>The most important part of the process is being able to follow the application's execution path. I approached the code by looking for interesting entry points and operations, then tracing how data moved between them. I paid attention to authentication checks, input validation, and the assumptions different components made about the data they received.</p>
+<p>The exam also requires you to automate your findings. Developing an exploit script is an important part of demonstrating that the vulnerability can be reproduced consistently. This means that understanding the application and writing the exploit are closely connected.</p>
+<p>Although OSWE took less time than OSED, I found it more challenging from a knowledge perspective. It required me to work outside the area I was most familiar with and apply a different way of thinking about vulnerabilities.</p>
+<p>This experience has been particularly useful in my independent research. I regularly review open-source projects, follow execution paths through unfamiliar codebases, and investigate how security checks are implemented. The ability to navigate source code and understand how different components interact has become one of the most useful skills I developed during the OSCE3 path.</p>
+
+<h2>Comparing the Three Exams</h2>
+<p>Although all three certifications fall under the OSCE3 designation, the exams require noticeably different approaches.</p>
+<table>
+<thead>
+<tr><th>Certification</th><th>Main focus</th><th class="num">My completion time</th></tr>
+</thead>
+<tbody>
+<tr><td>OSEP</td><td>Enterprise penetration testing, Active Directory, and defense evasion</td><td class="num">~8 hours</td></tr>
+<tr><td>OSED</td><td>Windows reverse engineering and exploit development</td><td class="num">~22 hours</td></tr>
+<tr><td>OSWE</td><td>Manual source code review and web application exploitation</td><td class="num">~12 hours</td></tr>
+<tr><td><b>Total</b></td><td></td><td class="num"><b>~42 hours</b></td></tr>
+</tbody>
+</table>
+<p>In terms of personal difficulty, OSWE was the most challenging because it covered the area where I had the least experience. OSED was the longest, but its subject matter was also the most familiar to me. OSEP was the shortest, and I enjoyed the experience of working through an interconnected enterprise environment.</p>
+<p>I would not use completion time as a measure of difficulty. Each exam tests different skills, and the amount of time required depends heavily on a candidate's existing experience and approach.</p>
+<p>What I found most valuable was having to switch between three different ways of thinking. OSEP required me to reason about systems and access. OSED required me to understand execution and memory. OSWE required me to understand application logic and trace data through source code.</p>
+
+<h2>What I Learned</h2>
+<p>The biggest benefit of completing the OSCE3 was not any individual tool or technique. It was developing the ability to approach security problems from different perspectives.</p>
+<p>Before starting, I had a stronger background in low-level exploitation and reverse engineering. After completing the three certifications, I had also spent considerable time working with enterprise environments and reviewing web application source code.</p>
+<p>A few habits made a difference throughout the process:</p>
+<ul>
+<li><b>Keep useful notes.</b> Record commands, findings, failed attempts, and observations. A good set of notes should help you understand a problem when you return to it weeks later.</li>
+<li><b>Understand the underlying techniques.</b> Do not rely on commands or scripts that you cannot explain. Knowing why something works makes it much easier to adapt when it does not.</li>
+<li><b>Learn to troubleshoot.</b> Spending too long pursuing one approach can waste valuable time. Recognize when to revisit your findings and try a different direction.</li>
+<li><b>Practice independently.</b> Walkthroughs are useful for learning, but you should eventually be able to approach unfamiliar problems without someone guiding you through them.</li>
+<li><b>Work on your weaker areas.</b> It is easy to spend most of your time practicing subjects you already enjoy. Improving your weakest areas will usually have a greater impact on your overall capabilities.</li>
+</ul>
+
+<h2>Advice for Future Prospects</h2>
+<p>If you are planning to pursue the OSCE3, I would recommend approaching each certification with a different preparation strategy.</p>
+<p>For <b>OSEP</b>, build a solid understanding of Windows environments, Active Directory, networking, and post-exploitation. Learn PowerShell and C#, and understand how security products affect the techniques you use. More importantly, practice working through interconnected environments rather than treating every machine as an isolated challenge.</p>
+<p>For <b>OSED</b>, spend time with Windows internals, x86 assembly, memory management, and debugging. Learn to use a debugger effectively and understand how common exploit mitigations work. If you cannot explain what is happening in memory, you will have a difficult time troubleshooting your own exploits.</p>
+<p>For <b>OSWE</b>, become comfortable reading unfamiliar source code. Learn how web applications process requests, handle authentication, and interact with databases and other components. Practice tracing user-controlled input through an application and determining whether a potentially dangerous operation is actually reachable.</p>
+<p>I would also recommend building your own labs. Having an environment that you can break, rebuild, and experiment with is extremely useful, particularly when studying topics that require repeated practice.</p>
+<p>Finally, do not rush through the material simply to reach the exam. The objective should be to understand the techniques well enough to apply them independently. Completing the exam is one thing; being able to use the knowledge outside the course is considerably more valuable.</p>
+
+<h2>Final Thoughts</h2>
+<p>I started pursuing these certifications while still in high school and earned the OSCE3 at 17. I am proud of accomplishing that, but the experience itself was more important than the distinction.</p>
+<p>The three certifications helped me develop in areas where I had previously lacked experience. I have since continued applying those skills through independent vulnerability research, reverse engineering, and security projects.</p>
+<p>The OSCE3 was an important milestone in my development, but it was never the end goal. There is still a great deal to learn, and I intend to keep working on it.</p>
+
+<a class="backlink" href="blog.html">&larr; Back to all posts</a>
+</div>
+</div>
+</div>
+</body></html>
